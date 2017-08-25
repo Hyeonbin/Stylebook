@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context=".MainActivity">
+
+    <LinearLayout
+        android:id="@+id/Sb_Topbar"
+        android:layout_width="match_parent"
+        android:layout_height="55dp"
+        android:orientation="horizontal"
+        android:layout_alignParentTop="true"
+        android:background="#ffffff"
+        android:weightSum="4"
+        android:paddingTop="5dp"
+        android:paddingBottom="5dp">
+
+        <ImageView
+            android:layout_width="80dp"
+            android:layout_height="wrap_content"
+            android:src="@drawable/stylebook_text"
+            android:layout_gravity="center_vertical"
+            android:layout_marginLeft="5dp"
+            android:layout_marginRight="100dp"/>
+
+        <LinearLayout
+            android:id="@+id/Sb_Tab_List"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_gravity="center_vertical"
+            android:padding="10dp">
+
+            <ImageView
+                android:id="@+id/Sb_Tab_Listimage"
+                android:layout_width="22dp"
+                android:layout_height="22dp"
+                android:src="@drawable/newsfeed"/>
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/Sb_Tab_Like"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_gravity="center_vertical"
+            android:padding="10dp">
+
+            <ImageView
+                android:id="@+id/Sb_Tab_Likeimage"
+                android:layout_width="22dp"
+                android:layout_height="22dp"
+                android:src="@drawable/like_emp"/>
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/Sb_Tab_Search"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_gravity="center_vertical"
+            android:padding="10dp">
+
+            <ImageView
+                android:id="@+id/Sb_Tab_Searchimage"
+                android:layout_width="22dp"
+                android:layout_height="22dp"
+                android:src="@drawable/tab_search3_emp"/>
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/Sb_Tab_Profile"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_gravity="center_vertical"
+            android:padding="10dp">
+
+            <ImageView
+                android:id="@+id/Sb_Tab_Profileimage"
+                android:layout_width="22dp"
+                android:layout_height="22dp"
+                android:src="@drawable/icon_person_emp"/>
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+    <android.support.v4.view.ViewPager
+        android:id="@+id/Viewpager_Main"
+        android:layout_below="@+id/Sb_Topbar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"/>
+
+</RelativeLayout>

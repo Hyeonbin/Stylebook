@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <LinearLayout
+        android:id="@+id/Sb_Search_Layout"
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:orientation="horizontal"
+        android:layout_marginBottom="10dp"
+        android:background="#ffffff"
+        android:weightSum="9"
+        android:padding="5dp">
+
+        <EditText
+            android:id="@+id/Sb_Search_Edittext"
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:layout_weight="1"
+            android:layout_gravity="center_vertical"
+            android:textSize="18dp"
+            android:background="#ffffff"
+            android:hint="검색어를 입력하세요."/>
+
+        <ImageView
+            android:id="@+id/Sb_Search_Enter"
+            android:layout_width="match_parent"
+            android:layout_height="35dp"
+            android:layout_weight="8"
+            android:layout_gravity="center_vertical"
+            android:src="@drawable/search"/>
+
+    </LinearLayout>
+
+    <android.support.v7.widget.RecyclerView
+        android:id="@+id/Sb_Search_Recyclerview"
+        android:layout_height="wrap_content"
+        android:layout_width="match_parent"
+        android:layout_marginBottom="10dp"
+        />
+
+</LinearLayout>

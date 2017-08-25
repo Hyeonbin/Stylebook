@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">Stylebook</string>
+    <string name="facebook_app_id">110566766255081</string>
+    <string name="fb_login_protocol_scheme">fb110566766255081</string>
+</resources>
