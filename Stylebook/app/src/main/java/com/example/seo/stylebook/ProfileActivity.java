@@ -48,6 +48,14 @@ public class ProfileActivity extends Fragment{
     ArrayList<LikeItem> profile_likelist;
     ArrayList<CommentItem> profile_commentlist;
 
+    FloatingActionButton profile_fab;
+    ImageView profile_image;
+    TextView profile_name;
+    TextView profile_location;
+    TextView profile_style;
+    TextView profile_text;
+    RecyclerView profile_recyclerview;
+
     String PROFILE_ADDRESS = "http://10.0.2.2:3000/profile/";
 
     @Override
@@ -60,15 +68,17 @@ public class ProfileActivity extends Fragment{
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         ViewGroup rootView = (ViewGroup) inflater.inflate(R.layout.floating_profile, container, false);
 
-        FloatingActionButton profile_fab = (FloatingActionButton)rootView.findViewById(R.id.Sb_Floating_Profilebtn);
+        currentfragment = this;
 
-        final ImageView profile_image = (ImageView)rootView.findViewById(R.id.Sb_Profile_Image);
-        final TextView profile_name = (TextView)rootView.findViewById(R.id.Sb_Profile_Name);
-        final TextView profile_location = (TextView)rootView.findViewById(R.id.Sb_Profile_Location);
-        final TextView profile_style = (TextView)rootView.findViewById(R.id.Sb_Profile_Style);
-        final TextView profile_text = (TextView)rootView.findViewById(R.id.Sb_Profile_Text);
+        profile_fab = (FloatingActionButton)rootView.findViewById(R.id.Sb_Floating_Profilebtn);
 
-        final RecyclerView profile_recyclerview = (RecyclerView) rootView.findViewById(R.id.Sb_Profile_Recyclerview);
+        profile_image = (ImageView)rootView.findViewById(R.id.Sb_Profile_Image);
+        profile_name = (TextView)rootView.findViewById(R.id.Sb_Profile_Name);
+        profile_location = (TextView)rootView.findViewById(R.id.Sb_Profile_Location);
+        profile_style = (TextView)rootView.findViewById(R.id.Sb_Profile_Style);
+        profile_text = (TextView)rootView.findViewById(R.id.Sb_Profile_Text);
+
+        profile_recyclerview = (RecyclerView) rootView.findViewById(R.id.Sb_Profile_Recyclerview);
         LinearLayoutManager profile_layoutmanager = new LinearLayoutManager(getContext());
         profile_recyclerview.setHasFixedSize(true);
         profile_recyclerview.setLayoutManager(profile_layoutmanager);
@@ -129,6 +139,70 @@ public class ProfileActivity extends Fragment{
         });
 
         return rootView;
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+
+        LinearLayoutManager profile_layoutmanager = new LinearLayoutManager(getContext());
+        profile_recyclerview.setHasFixedSize(true);
+        profile_recyclerview.setLayoutManager(profile_layoutmanager);
+
+        profile_recyclerview.setFocusable(false);
+
+        OkHttpClient like_client = new OkHttpClient.Builder().connectTimeout(10000, TimeUnit.MILLISECONDS).cookieJar(new JavaNetCookieJar(new CookieManager())).build();
+        retrofit = new Retrofit.Builder().client(like_client).baseUrl(serverService.API_URL).build();
+        serverService = retrofit.create(ServerService.class);
+        Call<ResponseBody> call = serverService.getProfile(AccessToken.getCurrentAccessToken().getUserId());
+        call.enqueue(new Callback<ResponseBody>() {
+            @Override
+            public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                try {
+                    String responseResult = response.body().string();
+                    JSONArray jsonArray = new JSONArray(responseResult);
+                    JSONObject jsonObject = jsonArray.getJSONObject(0);
+                    Log.v("ProfileActivity", jsonArray.toString());
+                    JSONArray profiledata = new JSONArray(jsonObject.getString("profiledata"));
+                    JSONArray stylelistdata = new JSONArray(jsonObject.getString("stylelistdata"));
+                    JSONArray likedata = new JSONArray(jsonObject.getString("likedata"));
+                    JSONArray commentdata = new JSONArray(jsonObject.getString("commentdata"));
+                    JSONObject profileObject = profiledata.getJSONObject(0);
+                    Glide.with(getContext()).load(PROFILE_ADDRESS + AccessToken.getCurrentAccessToken().getUserId() + ".jpg").into(profile_image); //Todo : 프로필 사진 처리
+                    profile_name.setText(profileObject.getString("name"));
+                    profile_location.setText(profileObject.getString("location"));
+                    profile_style.setText(profileObject.getString("style"));
+                    profile_text.setText(profileObject.getString("text"));
+                    setStylelistArray(stylelistdata);
+                    setLikelistArray(likedata);
+                    setCommentlistArray(commentdata);
+                    setProfilelistArray(profiledata);
+                    profile_recyclerview.setAdapter(new StyleListAdapter(getContext(), profile_arraylist, profile_likelist, profile_commentlist, profile_profilelist));
+                    Log.v("ProfileActivity", "Connect Completed!");
+                } catch (IOException e) {
+                    e.printStackTrace();
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ResponseBody> call, Throwable t) {
+                Log.v("ProfileActivity", t.getLocalizedMessage());
+            }
+        });
+
+        profile_fab.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent(getActivity(), ModifyProfileActivity.class);
+                intent.putExtra("name", profile_profilelist.get(0).getName());
+                intent.putExtra("location", profile_profilelist.get(0).getLocation());
+                intent.putExtra("style", profile_profilelist.get(0).getStyle());
+                intent.putExtra("text", profile_profilelist.get(0).getText());
+                startActivity(intent);
+            }
+        });
     }
 
     private void setStylelistArray(JSONArray jsonArray) throws JSONException {

@@ -49,6 +49,20 @@
 
                 </LinearLayout>
 
+                <View
+                    android:layout_width="0dp"
+                    android:layout_height="0dp"
+                    android:layout_weight="1"/>
+
+                <TextView
+                    android:id="@+id/Sb_Cardview_Time"
+                    android:layout_gravity="center_vertical"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="시간 입니다."
+                    android:textSize="15dp"
+                    android:textColor="#c8c8c8" />
+
             </LinearLayout>
 
             <ImageView
@@ -127,14 +141,13 @@
                     android:layout_height="0dp"
                     android:layout_weight="1"/>
 
-                <TextView
-                    android:id="@+id/Sb_Cardview_Time"
-                    android:layout_gravity="center_vertical"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="시간 입니다."
-                    android:textSize="15dp"
-                    android:textColor="#c8c8c8" />
+                <ImageView
+                    android:id="@+id/Sb_Cardview_Settingbtn"
+                    android:layout_width="30dp"
+                    android:layout_height="21dp"
+                    android:src="@drawable/setting"
+                    android:visibility="gone"
+                    />
 
             </LinearLayout>
 

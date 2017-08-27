@@ -183,6 +183,10 @@ public class ModifyProfileActivity extends Activity{
                         }
                     });
                 }
+                ((StyleListActivity)StyleListActivity.currentfragment).onResume();
+                ((LikeActivity)LikeActivity.currentfragment).onResume();
+                ((ProfileActivity)ProfileActivity.currentfragment).onResume();
+                ((SearchActivity)SearchActivity.currentfragment).onResume();
                 finish();
             }
         });
@@ -325,7 +329,7 @@ public class ModifyProfileActivity extends Activity{
             PermissionListener permissionListener = new PermissionListener() {
                 @Override
                 public void onPermissionGranted() {
-                    Toast.makeText(getApplicationContext(), "권한을 허가하셨습니다", Toast.LENGTH_SHORT).show();
+
                 }
 
                 @Override

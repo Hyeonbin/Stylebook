@@ -14,6 +14,7 @@ import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.Toast;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -44,6 +45,10 @@ public class SearchActivity extends Fragment {
     ArrayList<CommentItem> search_commentlist;
     ArrayList<ProfileItem> search_profilelist;
 
+    RecyclerView search_recyclerview;
+    EditText search_text;
+    ImageView search_btn;
+
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -54,13 +59,74 @@ public class SearchActivity extends Fragment {
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         ViewGroup rootView = (ViewGroup)inflater.inflate(R.layout.activity_search, container, false);
 
-        final RecyclerView search_recyclerview = (RecyclerView) rootView.findViewById(R.id.Sb_Search_Recyclerview);
+        currentfragment = this;
+
+        search_recyclerview = (RecyclerView) rootView.findViewById(R.id.Sb_Search_Recyclerview);
         LinearLayoutManager search_layoutmanager = new LinearLayoutManager(getContext());
         search_recyclerview.setHasFixedSize(true);
         search_recyclerview.setLayoutManager(search_layoutmanager);
 
-        final EditText search_text = (EditText)rootView.findViewById(R.id.Sb_Search_Edittext);
-        ImageView search_btn = (ImageView)rootView.findViewById(R.id.Sb_Search_Enter);
+        search_text = (EditText)rootView.findViewById(R.id.Sb_Search_Edittext);
+        search_btn = (ImageView)rootView.findViewById(R.id.Sb_Search_Enter);
+        OkHttpClient search_client = new OkHttpClient.Builder().connectTimeout(10000, TimeUnit.MILLISECONDS).cookieJar(new JavaNetCookieJar(new CookieManager())).build();
+        retrofit = new Retrofit.Builder().client(search_client).baseUrl(serverService.API_URL).build();
+        serverService = retrofit.create(ServerService.class);
+
+        search_btn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                // Todo: 클릭 시 serverservice의 getSearchlist() 호출
+                if(search_text.getText() != null) {
+                    Call<ResponseBody> call = serverService.getSearchlist(search_text.getText().toString());
+                    call.enqueue(new Callback<ResponseBody>() {
+                        @Override
+                        public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                            try {
+                                String responseResult = response.body().string();
+                                JSONArray jsonArray = new JSONArray(responseResult);
+                                JSONObject jsonObject = jsonArray.getJSONObject(0);
+                                Log.v("SearchActivity", jsonArray.toString());
+                                JSONArray stylelistdata = new JSONArray(jsonObject.getString("stylelistdata"));
+                                JSONArray likedata = new JSONArray(jsonObject.getString("likedata"));
+                                JSONArray commentdata = new JSONArray(jsonObject.getString("commentdata"));
+                                JSONArray profiledata = new JSONArray(jsonObject.getString("profiledata"));
+                                setSearchArray(stylelistdata);
+                                setLikelistArray(likedata);
+                                setCommentlistArray(commentdata);
+                                setProfilelistArray(profiledata);
+                                search_recyclerview.setAdapter(new StyleListAdapter(getContext(), search_arraylist, search_likelist, search_commentlist, search_profilelist));
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            } catch (JSONException e) {
+                                e.printStackTrace();
+                            }
+                        }
+
+                        @Override
+                        public void onFailure(Call<ResponseBody> call, Throwable t) {
+                            Log.v("SearchActivity", t.getLocalizedMessage());
+                        }
+                    });
+                } else {
+                    // Todo: 검색어가 없음을 토스트 메시지로 알린다
+                    Toast.makeText(getContext(), "검색어를 입력해주세요", Toast.LENGTH_SHORT).show();
+                }
+                InputMethodManager imm = (InputMethodManager)getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
+                imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
+            }
+        });
+
+        return rootView;
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+
+        LinearLayoutManager search_layoutmanager = new LinearLayoutManager(getContext());
+        search_recyclerview.setHasFixedSize(true);
+        search_recyclerview.setLayoutManager(search_layoutmanager);
+
         OkHttpClient search_client = new OkHttpClient.Builder().connectTimeout(10000, TimeUnit.MILLISECONDS).cookieJar(new JavaNetCookieJar(new CookieManager())).build();
         retrofit = new Retrofit.Builder().client(search_client).baseUrl(serverService.API_URL).build();
         serverService = retrofit.create(ServerService.class);
@@ -107,8 +173,6 @@ public class SearchActivity extends Fragment {
                 imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
             }
         });
-
-        return rootView;
     }
 
     private void setSearchArray(JSONArray jsonArray) throws JSONException {

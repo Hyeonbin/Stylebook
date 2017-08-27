@@ -35,11 +35,15 @@ import retrofit2.Retrofit;
  */
 public class LikeActivity extends Fragment {
     Retrofit retrofit;
+    public static Fragment currentfragment;
     ServerService serverService;
     ArrayList<StyleItem> like_arraylist = new ArrayList<>();
     ArrayList<LikeItem> like_likelistForStylelist = new ArrayList<>();
     ArrayList<CommentItem> like_commentlist = new ArrayList<>();
     ArrayList<ProfileItem> like_profilelist = new ArrayList<>();
+
+    SwipeRefreshLayout like_swiperefreshlayout;
+    RecyclerView like_recyclerview;
 
     StyleListAdapter like_styleListAdapter;
 
@@ -53,9 +57,11 @@ public class LikeActivity extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         ViewGroup rootView = (ViewGroup) inflater.inflate(R.layout.activity_likelist, container, false);
 
-        final SwipeRefreshLayout like_swiperefreshlayout = (SwipeRefreshLayout)rootView.findViewById(R.id.Sb_Like_Swiperefreshlayout);
+        currentfragment = this;
 
-        final RecyclerView like_recyclerview = (RecyclerView) rootView.findViewById(R.id.Sb_Like_Recyclerview);
+        like_swiperefreshlayout = (SwipeRefreshLayout)rootView.findViewById(R.id.Sb_Like_Swiperefreshlayout);
+
+        like_recyclerview = (RecyclerView) rootView.findViewById(R.id.Sb_Like_Recyclerview);
         LinearLayoutManager like_layoutmanager = new LinearLayoutManager(getContext());
         like_recyclerview.setHasFixedSize(true);
         like_recyclerview.setLayoutManager(like_layoutmanager);
@@ -142,6 +148,96 @@ public class LikeActivity extends Fragment {
         });
 
         return rootView;
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+
+        LinearLayoutManager like_layoutmanager = new LinearLayoutManager(getContext());
+        like_recyclerview.setHasFixedSize(true);
+        like_recyclerview.setLayoutManager(like_layoutmanager);
+
+        OkHttpClient like_client = new OkHttpClient.Builder().connectTimeout(10000, TimeUnit.MILLISECONDS).cookieJar(new JavaNetCookieJar(new CookieManager())).build();
+        retrofit = new Retrofit.Builder().client(like_client).baseUrl(serverService.API_URL).build();
+        serverService = retrofit.create(ServerService.class);
+        final Call<ResponseBody> call = serverService.getLikelist(AccessToken.getCurrentAccessToken().getUserId()); // Todo : facebook id 입력
+        call.enqueue(new Callback<ResponseBody>() {
+            @Override
+            public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                try {
+                    String responseResult = response.body().string();
+                    JSONArray jsonArray = new JSONArray(responseResult);
+                    JSONObject jsonObject = jsonArray.getJSONObject(0);
+                    Log.v("LikeActivity", jsonArray.toString());
+                    JSONArray likedata = new JSONArray(jsonObject.getString("likedata"));
+                    JSONArray likedataforstylelist = new JSONArray(jsonObject.getString("likedataforstylelist"));
+                    JSONArray commentdata = new JSONArray(jsonObject.getString("commentdata"));
+                    JSONArray stylelistdata = new JSONArray(jsonObject.getString("stylelistdata"));
+                    JSONArray profiledata = new JSONArray(jsonObject.getString("profiledata"));
+                    setLikelistArray(likedataforstylelist);
+                    setCommentlistArray(commentdata);
+                    setStylelistArray(stylelistdata, likedata);
+                    setProfilelistArray(profiledata);
+                    like_styleListAdapter = new StyleListAdapter(getContext(), like_arraylist, like_likelistForStylelist, like_commentlist, like_profilelist);
+                    like_recyclerview.setAdapter(like_styleListAdapter);
+                    like_styleListAdapter.notifyDataSetChanged();
+                    Log.v("LikeActivity", "Call is completed!");
+                } catch (IOException e) {
+                    e.printStackTrace();
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+
+            }
+
+            @Override
+            public void onFailure(Call<ResponseBody> call, Throwable t) {
+                // Log.v("LikeActivity", t.getLocalizedMessage());
+            }
+        });
+
+        like_swiperefreshlayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                call.clone().enqueue(new Callback<ResponseBody>() {
+                    @Override
+                    public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                        try {
+                            String responseResult = response.body().string();
+                            JSONArray jsonArray = new JSONArray(responseResult);
+                            JSONObject jsonObject = jsonArray.getJSONObject(0);
+                            Log.v("LikeActivity", jsonArray.toString());
+                            JSONArray likedata = new JSONArray(jsonObject.getString("likedata"));
+                            JSONArray likedataforstylelist = new JSONArray(jsonObject.getString("likedataforstylelist"));
+                            JSONArray commentdata = new JSONArray(jsonObject.getString("commentdata"));
+                            JSONArray stylelistdata = new JSONArray(jsonObject.getString("stylelistdata"));
+                            JSONArray profiledata = new JSONArray(jsonObject.getString("profiledata"));
+                            setLikelistArray(likedataforstylelist);
+                            setCommentlistArray(commentdata);
+                            setStylelistArray(stylelistdata, likedata);
+                            setProfilelistArray(profiledata);
+                            like_styleListAdapter = new StyleListAdapter(getContext(), like_arraylist, like_likelistForStylelist, like_commentlist, like_profilelist);
+                            like_recyclerview.setAdapter(like_styleListAdapter);
+                            like_styleListAdapter.notifyDataSetChanged();
+                            Log.v("LikeActivity", "Call is completed!");
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+
+                    }
+
+                    @Override
+                    public void onFailure(Call<ResponseBody> call, Throwable t) {
+                        // Log.v("LikeActivity", t.getLocalizedMessage());
+                    }
+                });
+
+                like_swiperefreshlayout.setRefreshing(false);
+            }
+        });
     }
 
     private void setLikelistArray(JSONArray jsonArray) throws JSONException {

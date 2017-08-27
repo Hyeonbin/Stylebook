@@ -1,5 +1,6 @@
 package com.example.seo.stylebook;
 
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
@@ -46,6 +47,10 @@ public class StyleListActivity extends Fragment {
     ArrayList<CommentItem> stylelist_commentlist;
     ArrayList<ProfileItem> stylelist_profilelist;
 
+    FloatingActionButton stylelist_fab;
+    SwipeRefreshLayout stylelist_swiperefreshlayout;
+    RecyclerView stylelist_recyclerview;
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -56,15 +61,17 @@ public class StyleListActivity extends Fragment {
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         ViewGroup rootView = (ViewGroup)inflater.inflate(R.layout.floating_stylelist, container, false);
 
-        FloatingActionButton stylelist_fab = (FloatingActionButton)rootView.findViewById(R.id.Sb_Floating_Stylelistbtn);
+        currentfragment = this;
 
-        final SwipeRefreshLayout stylelist_swiperefreshlayout = (SwipeRefreshLayout)rootView.findViewById(R.id.Sb_Stylelist_Swiperefreshlayout);
+        stylelist_fab = (FloatingActionButton)rootView.findViewById(R.id.Sb_Floating_Stylelistbtn);
+
+        stylelist_swiperefreshlayout = (SwipeRefreshLayout)rootView.findViewById(R.id.Sb_Stylelist_Swiperefreshlayout);
 
         stylelist_swiperefreshlayout.setColorSchemeColors(
             Color.BLACK, Color.WHITE
         );
 
-        final RecyclerView stylelist_recyclerview = (RecyclerView)rootView.findViewById(R.id.Sb_Stylelist_Recyclerview);
+        stylelist_recyclerview = (RecyclerView)rootView.findViewById(R.id.Sb_Stylelist_Recyclerview);
         LinearLayoutManager stylelist_layoutmanager = new LinearLayoutManager(getContext());
         stylelist_recyclerview.setHasFixedSize(true);
         stylelist_recyclerview.setLayoutManager(stylelist_layoutmanager);
@@ -154,6 +161,103 @@ public class StyleListActivity extends Fragment {
         });
 
         return rootView;
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+
+        stylelist_swiperefreshlayout.setColorSchemeColors(
+                Color.BLACK, Color.WHITE
+        );
+
+        LinearLayoutManager stylelist_layoutmanager = new LinearLayoutManager(getContext());
+        stylelist_recyclerview.setHasFixedSize(true);
+        stylelist_recyclerview.setLayoutManager(stylelist_layoutmanager);
+
+        OkHttpClient stylelist_client = new OkHttpClient.Builder().connectTimeout(10000, TimeUnit.MILLISECONDS).cookieJar(new JavaNetCookieJar(new CookieManager())).build();
+        retrofit = new Retrofit.Builder().client(stylelist_client).baseUrl(serverService.API_URL).build();
+        serverService = retrofit.create(ServerService.class);
+        final Call<ResponseBody> call = serverService.getList();
+        call.enqueue(new Callback<ResponseBody>() {
+            @Override
+            public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                try {
+                    String responseResult = response.body().string();
+                    JSONArray jsonArray = new JSONArray(responseResult);
+                    Log.v("StyleListActivity", jsonArray.toString());
+                    JSONObject jsonObject = jsonArray.getJSONObject(0);
+                    JSONArray stylelistdata = new JSONArray(jsonObject.getString("stylelistdata"));
+                    JSONArray likedata = new JSONArray(jsonObject.getString("likedata"));
+                    JSONArray commentdata = new JSONArray(jsonObject.getString("commentdata"));
+                    JSONArray profiledata = new JSONArray(jsonObject.getString("profiledata"));
+                    setStylelistArray(stylelistdata);
+                    setLikelistArray(likedata);
+                    setCommentlistArray(commentdata);
+                    setProfilelistArray(profiledata);
+                    StyleListAdapter stylelist_styleListAdapter = new StyleListAdapter(getContext(), stylelist_arraylist, stylelist_likelist, stylelist_commentlist, stylelist_profilelist);
+                    stylelist_recyclerview.setAdapter(stylelist_styleListAdapter);
+                    stylelist_styleListAdapter.notifyDataSetChanged();
+                    Log.v("StyleListActivity", "Connect Completed!");
+                } catch (IOException e) {
+                    e.printStackTrace();
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ResponseBody> call, Throwable t) {
+                Log.v("StyleListActivity", t.getLocalizedMessage());
+            }
+        });
+
+        stylelist_fab.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent(getActivity(), AddStyleActivity.class);
+                startActivity(intent);
+            }
+        });
+
+        stylelist_swiperefreshlayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                call.clone().enqueue(new Callback<ResponseBody>() {
+                    @Override
+                    public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                        try {
+                            String responseResult = response.body().string();
+                            JSONArray jsonArray = new JSONArray(responseResult);
+                            Log.v("StyleListActivity", jsonArray.toString());
+                            JSONObject jsonObject = jsonArray.getJSONObject(0);
+                            JSONArray stylelistdata = new JSONArray(jsonObject.getString("stylelistdata"));
+                            JSONArray likedata = new JSONArray(jsonObject.getString("likedata"));
+                            JSONArray commentdata = new JSONArray(jsonObject.getString("commentdata"));
+                            JSONArray profiledata = new JSONArray(jsonObject.getString("profiledata"));
+                            setStylelistArray(stylelistdata);
+                            setLikelistArray(likedata);
+                            setCommentlistArray(commentdata);
+                            setProfilelistArray(profiledata);
+                            StyleListAdapter stylelist_styleListAdapter = new StyleListAdapter(getContext(), stylelist_arraylist, stylelist_likelist, stylelist_commentlist, stylelist_profilelist);
+                            stylelist_recyclerview.setAdapter(stylelist_styleListAdapter);
+                            stylelist_styleListAdapter.notifyDataSetChanged();
+                            Log.v("StyleListActivity", "Connect Completed!");
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(Call<ResponseBody> call, Throwable t) {
+                        Log.v("StyleListActivity", t.getLocalizedMessage());
+                    }
+                });
+                stylelist_swiperefreshlayout.setRefreshing(false);
+            }
+        });
     }
 
     private void setStylelistArray(JSONArray jsonArray) throws JSONException {

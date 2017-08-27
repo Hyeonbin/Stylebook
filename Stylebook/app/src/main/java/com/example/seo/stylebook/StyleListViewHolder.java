@@ -17,6 +17,7 @@ public class StyleListViewHolder extends RecyclerView.ViewHolder {
     public TextView stylelist_likenum;
     public TextView stylelist_commentnum;
     public TextView stylelist_time;
+    public ImageView stylelist_settingbtn;
 
     public StyleListViewHolder(View view) {
         super(view);
@@ -28,5 +29,6 @@ public class StyleListViewHolder extends RecyclerView.ViewHolder {
         stylelist_likenum = (TextView)view.findViewById(R.id.Sb_Cardview_Likenum);
         stylelist_commentnum = (TextView)view.findViewById(R.id.Sb_Cardview_Commentnum);
         stylelist_time = (TextView)view.findViewById(R.id.Sb_Cardview_Time);
+        stylelist_settingbtn = (ImageView)view.findViewById(R.id.Sb_Cardview_Settingbtn);
     }
 }

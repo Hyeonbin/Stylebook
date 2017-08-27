@@ -20,6 +20,7 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Toast;
 
+import com.bumptech.glide.Glide;
 import com.facebook.AccessToken;
 import com.gun0912.tedpermission.PermissionListener;
 import com.gun0912.tedpermission.TedPermission;
@@ -57,6 +58,8 @@ public class ModifyStyleActivity extends Activity {
     private static final int REQUEST_PHOTO_ALBUM = 1; // 사진앨범 시그널 변수
     private static final int REQUEST_CROP = 2; // 사진을 크롭하기 위한 시그널 변수
 
+    String STYLE_ADDRESS = "http://10.0.2.2:3000/stylelist/";
+
     private Uri ImageCaptureUri;
     private String absolutePath = null;
     private String strPhotoName;
@@ -70,6 +73,9 @@ public class ModifyStyleActivity extends Activity {
         ImageView modifystyle_sendbtn = (ImageView)findViewById(R.id.Sb_Modifystyle_Sendbtn);
         ImageView modifystyle_image = (ImageView)findViewById(R.id.Sb_Modifystyle_Image);
         final EditText modifystyle_text = (EditText)findViewById(R.id.Sb_Modifystyle_Text);
+
+        Glide.with(getApplicationContext()).load(STYLE_ADDRESS + getIntent().getStringExtra("image")).into(modifystyle_image);
+        modifystyle_text.setText(getIntent().getStringExtra("text"));
 
         modifystyle_backbtn.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -119,7 +125,7 @@ public class ModifyStyleActivity extends Activity {
                 serverService = retrofit.create(ServerService.class);
 
                 int delimgsig = 0;
-                String profileimagename;
+                String imagename;
                 File file = new File(absolutePath);
                 RequestBody mFile = RequestBody.create(MediaType.parse("image/*"), file);
                 MultipartBody.Part fileToUpload = MultipartBody.Part.createFormData("file", file.getName(), mFile);
@@ -127,15 +133,15 @@ public class ModifyStyleActivity extends Activity {
 
                 if(file.exists()) {
                     delimgsig = 1;
-                    profileimagename = file.getName();
+                    imagename = file.getName();
                 } else {
                     delimgsig = 0;
-                    profileimagename = getIntent().getStringExtra("profileimagename");
+                    imagename = getIntent().getStringExtra("image");
                 }
 
                 Call<ResponseBody> call = serverService.modifyStyle(
-                    getIntent().getIntExtra("id", -1),
-                    profileimagename,
+                    getIntent().getIntExtra("listid", -1),
+                    imagename,
                     modifystyle_text.getText().toString(),
                     delimgsig
                 );
@@ -166,6 +172,11 @@ public class ModifyStyleActivity extends Activity {
                         }
                     });
                 }
+                ((StyleListActivity)StyleListActivity.currentfragment).onResume();
+                ((LikeActivity)LikeActivity.currentfragment).onResume();
+                ((ProfileActivity)ProfileActivity.currentfragment).onResume();
+                ((SearchActivity)SearchActivity.currentfragment).onResume();
+                finish();
             }
         });
 
@@ -308,7 +319,7 @@ public class ModifyStyleActivity extends Activity {
             PermissionListener permissionListener = new PermissionListener() {
                 @Override
                 public void onPermissionGranted() {
-                    Toast.makeText(getApplicationContext(), "권한을 허가하셨습니다", Toast.LENGTH_SHORT).show();
+
                 }
 
                 @Override

@@ -57,6 +57,8 @@ public class CommentActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_comment);
 
+        overridePendingTransition(R.anim.down_to_up, R.anim.up_to_down);
+
         comment_listid = getIntent().getIntExtra("listid", -1);
         final RecyclerView comment_listview = (RecyclerView) findViewById(R.id.Sb_Comment_Recyclerview);
         LinearLayoutManager stylelist_layoutmanager = new LinearLayoutManager(getApplicationContext());
@@ -149,6 +151,10 @@ public class CommentActivity extends Activity {
                         Log.v("CommentActivity", t.getLocalizedMessage());
                     }
                 });
+                ((StyleListActivity)StyleListActivity.currentfragment).onResume();
+                ((LikeActivity)LikeActivity.currentfragment).onResume();
+                ((ProfileActivity)ProfileActivity.currentfragment).onResume();
+                ((SearchActivity)SearchActivity.currentfragment).onResume();
             }
         });
     }

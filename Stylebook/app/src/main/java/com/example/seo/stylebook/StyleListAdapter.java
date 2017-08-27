@@ -1,6 +1,8 @@
 package com.example.seo.stylebook;
 
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -85,22 +87,26 @@ public class StyleListAdapter extends RecyclerView.Adapter<StyleListViewHolder> 
         else
             holder.stylelist_like.setImageResource(R.drawable.like);
 
+        if (AccessToken.getCurrentAccessToken().getUserId().equals(item.getFacebookid())){
+            holder.stylelist_settingbtn.setVisibility(View.VISIBLE);
+        }
+
         holder.stylelist_like.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 // Todo : 좋아요 버튼 처리 요망, 좋아요 버튼 색 처리
                 if(identifyLike(item.getId(), item.getFacebookid(), likeitems) == 0) {
-                    holder.stylelist_like.setImageResource(R.drawable.like_red);
-                    LikeItem likeItem = new LikeItem();
+                    //holder.stylelist_like.setImageResource(R.drawable.like_red);
+                    /*LikeItem likeItem = new LikeItem();
                     likeItem.setFacebookid(AccessToken.getCurrentAccessToken().getUserId());
                     likeItem.setListid(item.getId());
                     likeItem.setTime(String.valueOf(System.currentTimeMillis()));
                     likeitems.add(likeItem);
-                    holder.stylelist_likenum.setText(""+getLikenum(item.getId(), likeitems));
+                    holder.stylelist_likenum.setText(""+getLikenum(item.getId(), likeitems));*/
                     Call<ResponseBody> call2 = serverService.likebtnClicked(
                             item.getId(),
                             AccessToken.getCurrentAccessToken().getUserId(),
-                            "1"
+                            String.valueOf(System.currentTimeMillis())
                     );
                     call2.enqueue(new Callback<ResponseBody>() {
                         @Override
@@ -114,9 +120,9 @@ public class StyleListAdapter extends RecyclerView.Adapter<StyleListViewHolder> 
                         }
                     });
                 } else {
-                    holder.stylelist_like.setImageResource(R.drawable.like);
-                    deleteLikelist(item.getId(), AccessToken.getCurrentAccessToken().getUserId(), likeitems);
-                    holder.stylelist_likenum.setText(""+getLikenum(item.getId(), likeitems));
+                    //holder.stylelist_like.setImageResource(R.drawable.like);
+                    //deleteLikelist(item.getId(), AccessToken.getCurrentAccessToken().getUserId(), likeitems);
+                    //holder.stylelist_likenum.setText(""+getLikenum(item.getId(), likeitems));
                     Call<ResponseBody> call2 = serverService.likebtnUnclicked(
                             item.getId(),
                             AccessToken.getCurrentAccessToken().getUserId()
@@ -132,6 +138,80 @@ public class StyleListAdapter extends RecyclerView.Adapter<StyleListViewHolder> 
                           //  Log.v("Likebtn", t.getLocalizedMessage());
                         }
                     });
+
+                }
+                ((StyleListActivity)StyleListActivity.currentfragment).onResume();
+                ((LikeActivity)LikeActivity.currentfragment).onResume();
+                ((ProfileActivity)ProfileActivity.currentfragment).onResume();
+                ((SearchActivity)SearchActivity.currentfragment).onResume();
+            }
+        });
+
+        holder.stylelist_settingbtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(final View v) {
+                DialogInterface.OnClickListener ModifyListener = new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        Intent intent = new Intent(context, ModifyStyleActivity.class);
+                        intent.putExtra("image", item.getImagename());
+                        intent.putExtra("text", item.getText());
+                        intent.putExtra("listid", item.getId());
+                        v.getContext().startActivity(intent);
+                    }
+                };
+                DialogInterface.OnClickListener DeleteListener = new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.dismiss();
+                        DialogInterface.OnClickListener ApplyListener = new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                dialog.dismiss();
+                                Call<ResponseBody> call3 = serverService.deleteStyle(item.getId());
+                                call3.enqueue(new Callback<ResponseBody>() {
+                                    @Override
+                                    public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                                        Log.v("Delete", "Delete button is clicked!");
+                                    }
+
+                                    @Override
+                                    public void onFailure(Call<ResponseBody> call, Throwable t) {
+
+                                    }
+                                });
+                                ((StyleListActivity)StyleListActivity.currentfragment).onResume();
+                                ((LikeActivity)LikeActivity.currentfragment).onResume();
+                                ((ProfileActivity)ProfileActivity.currentfragment).onResume();
+                                ((SearchActivity)SearchActivity.currentfragment).onResume();
+                            }
+                        };
+                        DialogInterface.OnClickListener CancelListener = new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                dialog.dismiss();
+                            }
+                        };
+
+                        new AlertDialog.Builder(context, R.style.MyAlertDialogTheme)
+                                .setTitle("해당 게시물을 삭제하시겠습니까?                ")
+                                .setPositiveButton("확인", ApplyListener)
+                                .setNegativeButton("취소", CancelListener)
+                                .show();
+                    }
+                };
+                DialogInterface.OnClickListener CancelListener = new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.dismiss();
+                    }
+                };
+                if (AccessToken.getCurrentAccessToken().getUserId().equals(item.getFacebookid())) {
+                    new AlertDialog.Builder(context, R.style.MyAlertDialogTheme)
+                            .setPositiveButton("게시글 수정", ModifyListener)
+                            .setNeutralButton("취소", CancelListener)
+                            .setNegativeButton("게시글 삭제", DeleteListener)
+                            .show();
                 }
             }
         });

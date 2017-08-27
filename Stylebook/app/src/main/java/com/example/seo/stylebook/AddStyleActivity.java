@@ -142,6 +142,10 @@ public class AddStyleActivity extends Activity {
                             Log.v("AddStyleActivity", t.getLocalizedMessage());
                         }
                     });
+                    ((StyleListActivity)StyleListActivity.currentfragment).onResume();
+                    ((LikeActivity)LikeActivity.currentfragment).onResume();
+                    ((ProfileActivity)ProfileActivity.currentfragment).onResume();
+                    ((SearchActivity)SearchActivity.currentfragment).onResume();
                     finish();
                 }
            }
@@ -319,6 +323,7 @@ public class AddStyleActivity extends Activity {
             PermissionListener permissionListener = new PermissionListener() {
                 @Override
                 public void onPermissionGranted() {
+
                 }
 
                 @Override

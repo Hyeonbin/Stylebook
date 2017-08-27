@@ -6,6 +6,7 @@ import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.Signature;
 import android.os.Bundle;
+import android.os.Handler;
 import android.util.Base64;
 import android.util.Log;
 import android.view.View;
@@ -117,7 +118,6 @@ public class LoginActivity extends Activity{
                                         null,
                                         object.getString("name"),
                                         null,
-                                        null,
                                         null
                                 );
                             } catch (JSONException e) {
@@ -147,6 +147,12 @@ public class LoginActivity extends Activity{
                     Intent intent = new Intent(LoginActivity.this, MainActivity.class);
                     startActivity(intent);
                 }
+                new Handler().postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        LoginActivity.this.finish();
+                    }
+                }, 1000);
             }
 
             @Override

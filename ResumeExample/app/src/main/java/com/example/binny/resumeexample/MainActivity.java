@@ -51,7 +51,8 @@ public class MainActivity extends Activity {
         swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
-                Intent intent = new Intent(MainActivity.this, MainActivity.class);
+                onResume();
+                /*Intent intent = new Intent(MainActivity.this, MainActivity.class);
                 startActivity(intent);
 
                 android.os.Handler handler = new android.os.Handler();
@@ -64,7 +65,7 @@ public class MainActivity extends Activity {
                     }
                 };
 
-                handler.postDelayed(runnable, 1000);
+                handler.postDelayed(runnable, 1000);*/
 
                 swipeRefreshLayout.setRefreshing(false);
             }
@@ -72,4 +73,50 @@ public class MainActivity extends Activity {
 
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        final SwipeRefreshLayout swipeRefreshLayout = (SwipeRefreshLayout)findViewById(R.id.swipe_layout);
+
+        swipeRefreshLayout.setColorSchemeColors(
+                Color.BLACK,
+                Color.WHITE
+        );
+
+        RecyclerView recyclerView = (RecyclerView)findViewById(R.id.recyclerlistview);
+        LinearLayoutManager linearLayoutManager = new LinearLayoutManager(getApplicationContext());
+        recyclerView.setHasFixedSize(true);
+        recyclerView.setLayoutManager(linearLayoutManager);
+
+        arrayList.add("Seo");
+        arrayList.add("Kim");
+
+        final RecyclerAdapter recyclerAdapter = new RecyclerAdapter(getApplicationContext(), arrayList);
+        recyclerView.setAdapter(recyclerAdapter);
+        recyclerAdapter.notifyDataSetChanged();
+
+        swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                onResume();
+                /*Intent intent = new Intent(MainActivity.this, MainActivity.class);
+                startActivity(intent);
+
+                android.os.Handler handler = new android.os.Handler();
+                Runnable runnable;
+
+                runnable = new Runnable() {
+                    @Override
+                    public void run() {
+                        MainActivity.this.finish();
+                    }
+                };
+
+                handler.postDelayed(runnable, 1000);*/
+
+                swipeRefreshLayout.setRefreshing(false);
+            }
+        });
+
+    }
 }
