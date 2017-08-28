@@ -52,11 +52,11 @@ router.get('/stylelist', function(req, res, next) {
   });
 });
 
-router.get('/stylelist/:profileimagename'){
+router.get('/stylelist/:profileimagename', function(res, req, next){
   var profileimagename = req.params.profileimagename;
 
   res.sendFile(path.resolve('./image/stylelistimg/' + profileimagename));
-}
+});
 
 router.post('/stylelist/addstyle', function(req, res, next) {
   var facebookid = req.body.facebookid;
@@ -279,7 +279,7 @@ router.post('/stylelist/modifystyle', function(req, res, next) {
   });
 });
 
-router.get('/stylelist/deletestyle', function(req, res, next) {
+router.post('/stylelist/deletestyle', function(req, res, next) {
   var listid = req.body.listid;
 
   pool.getConnection(function(err, connection) {
@@ -349,14 +349,15 @@ router.post('/profile', function(req, res, next) {
 router.post('/profile/addprofile', function(req, res, next) {
   var facebookid = req.body.facebookid;
   var name = req.body.name;
+  var profileimage = req.body.profileimage;
   var location = req.body.location;
   var style = req.body.style;
   var text = req.body.text;
 
-  var postData = [facebookid, name, location, style, text];
+  var postData = [facebookid, name, profileimage, location, style, text];
 
   pool.getConnection(function(err, connection) {
-    var sqlForInsert = "INSERT INTO profiledata (facebookid, name, location, style, text) VALUES (?, ?, ?, ?, ?)";
+    var sqlForInsert = "INSERT INTO profiledata (facebookid, name, profileimage, location, style, text) VALUES (?, ?, ?, ?, ?, ?)";
 
     connection.query(sqlForInsert, postData, function(err, result) {
       if(err)
@@ -371,13 +372,14 @@ router.post('/profile/addprofile', function(req, res, next) {
 router.post('/profile/modifyprofile', function(req, res, next) {
   var facebookid = req.body.facebookid;
   var name = req.body.name;
+  var profileimage = req.body.profileimage;
   var location = req.body.location;
   var style = req.body.style;
   var text = req.body.text;
   var delimgsig = req.body.delimgsig;
 
   pool.getConnection(function(err, connection) {
-    var sqlForUpdate = "UPDATE profiledata SET name = '" + name + "', location = '" + location + "', style = '" + style + "', text = '" + text + "' WHERE facebookid = '" + facebookid + "'";
+    var sqlForUpdate = "UPDATE profiledata SET name = '" + name + "', profileimage = '" + profileimage + "', location = '" + location + "', style = '" + style + "', text = '" + text + "' WHERE facebookid = '" + facebookid + "'";
     var sqlForSelect = "SELECT * FROM profiledata WHERE facebookid = '" + facebookid + "'";
 
     if(delimgsig == 0) {

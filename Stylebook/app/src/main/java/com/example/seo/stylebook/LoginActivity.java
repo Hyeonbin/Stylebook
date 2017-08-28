@@ -107,7 +107,7 @@ public class LoginActivity extends Activity{
 
                     }
                 });
-                if(loginsig) {
+                if(!loginsig) {
                     GraphRequest graphRequest = GraphRequest.newMeRequest(AccessToken.getCurrentAccessToken(), new GraphRequest.GraphJSONObjectCallback() {
                         @Override
                         public void onCompleted(JSONObject object, GraphResponse response) {
@@ -115,8 +115,9 @@ public class LoginActivity extends Activity{
                             try {
                                 call = serverService.addProfile(
                                         AccessToken.getCurrentAccessToken().getUserId(),
-                                        null,
                                         object.getString("name"),
+                                        "no",
+                                        null,
                                         null,
                                         null
                                 );

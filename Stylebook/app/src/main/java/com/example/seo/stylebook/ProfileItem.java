@@ -6,9 +6,18 @@ package com.example.seo.stylebook;
 public class ProfileItem {
     String facebookid;
     String name;
+    String profileimage;
     String location;
     String style;
     String text;
+
+    public String getProfileimage() {
+        return profileimage;
+    }
+
+    public void setProfileimage(String profileimage) {
+        this.profileimage = profileimage;
+    }
 
     public String getFacebookid() {
         return facebookid;

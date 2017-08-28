@@ -61,6 +61,7 @@ public class ModifyProfileActivity extends Activity{
     private String strPhotoName;
 
     String PROFILE_ADDRESS = "http://10.0.2.2:3000/profile/";
+    String profileimage = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -77,7 +78,9 @@ public class ModifyProfileActivity extends Activity{
         final EditText modifyprofile_style = (EditText)findViewById(R.id.Sb_Modifyprofile_Style);
         final EditText modifyprofile_text = (EditText)findViewById(R.id.Sb_Modifyprofile_Text);
 
-        Glide.with(getApplicationContext()).load(PROFILE_ADDRESS + AccessToken.getCurrentAccessToken() + ".jpg").into(modifyprofile_image); //Todo : 프로필 사진 처리
+        profileimage = getIntent().getStringExtra("profileimage");
+        if(!profileimage.equals("no"))
+            Glide.with(getApplicationContext()).load(PROFILE_ADDRESS + AccessToken.getCurrentAccessToken() + ".jpg").into(modifyprofile_image); //Todo : 프로필 사진 처리
         modifyprofile_name.setHint(getIntent().getStringExtra("name"));
         modifyprofile_location.setHint(getIntent().getStringExtra("location"));
         modifyprofile_style.setHint(getIntent().getStringExtra("style"));
@@ -128,66 +131,71 @@ public class ModifyProfileActivity extends Activity{
             @Override
             public void onClick(View view) {
                 // Todo: 서버로 수정된 프로필 정보 보낸다
-                OkHttpClient modifyprofile_client =  new OkHttpClient.Builder().connectTimeout(10000, TimeUnit.MILLISECONDS).cookieJar(new JavaNetCookieJar(new CookieManager())).build();
-                retrofit = new Retrofit.Builder().client(modifyprofile_client).baseUrl(serverService.API_URL).build();
-                serverService = retrofit.create(ServerService.class);
+                if(modifyprofile_name.getText().toString().getBytes().length <= 0) {
+                    Toast.makeText(getApplicationContext(), "이름이 입력되지 않았습니다", Toast.LENGTH_LONG).show();
+                } else {
+                    OkHttpClient modifyprofile_client = new OkHttpClient.Builder().connectTimeout(10000, TimeUnit.MILLISECONDS).cookieJar(new JavaNetCookieJar(new CookieManager())).build();
+                    retrofit = new Retrofit.Builder().client(modifyprofile_client).baseUrl(serverService.API_URL).build();
+                    serverService = retrofit.create(ServerService.class);
 
-                int delimgsig = 0;
-                String profileimagename = getIntent().getStringExtra("profileimagename");
+                    int delimgsig = 0;
 
-                File file = null;
-                RequestBody mFile = null;
-                MultipartBody.Part fileToUpload = null;
-                RequestBody filename= null;
+                    File file = null;
+                    RequestBody mFile = null;
+                    MultipartBody.Part fileToUpload = null;
+                    RequestBody filename = null;
 
-                if(absolutePath != null) {
-                    file = new File(absolutePath);
-                    mFile = RequestBody.create(MediaType.parse("image/*"), file);
-                    fileToUpload = MultipartBody.Part.createFormData("file", file.getName(), mFile);
-                    filename = RequestBody.create(MediaType.parse("text/plain"), file.getName());
-                    delimgsig = 1;
-                }
-
-                Call<ResponseBody> call = serverService.modifyMyprofile(
-                        AccessToken.getCurrentAccessToken().getUserId(),
-                        modifyprofile_name.getText().toString(),
-                        modifyprofile_location.getText().toString(),
-                        modifyprofile_style.getText().toString(),
-                        modifyprofile_text.getText().toString(),
-                        delimgsig
-                );
-
-                call.enqueue(new Callback<ResponseBody>() {
-                    @Override
-                    public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
-                        Log.v("ModifyProfileActivity", "call is completed!");
+                    if (absolutePath != null) {
+                        file = new File(absolutePath);
+                        mFile = RequestBody.create(MediaType.parse("image/*"), file);
+                        fileToUpload = MultipartBody.Part.createFormData("file", file.getName(), mFile);
+                        filename = RequestBody.create(MediaType.parse("text/plain"), file.getName());
+                        delimgsig = 1;
+                        profileimage = "yes";
                     }
 
-                    @Override
-                    public void onFailure(Call<ResponseBody> call, Throwable t) {
-                       // Log.v("ModifyProfileActivity", t.getLocalizedMessage());
-                    }
-                });
+                    Call<ResponseBody> call = serverService.modifyMyprofile(
+                            AccessToken.getCurrentAccessToken().getUserId(),
+                            modifyprofile_name.getText().toString(),
+                            profileimage,
+                            modifyprofile_location.getText().toString(),
+                            modifyprofile_style.getText().toString(),
+                            modifyprofile_text.getText().toString(),
+                            delimgsig
+                    );
 
-                if(delimgsig == 1){
-                    Call<ResponseBody> call1 = serverService.upprofileImage(fileToUpload, filename);
-                    call1.enqueue(new Callback<ResponseBody>() {
+                    call.enqueue(new Callback<ResponseBody>() {
                         @Override
                         public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
-                            Log.v("ModifyProfileActivity", "call1 is completed!");
+                            Log.v("ModifyProfileActivity", "call is completed!");
                         }
 
                         @Override
                         public void onFailure(Call<ResponseBody> call, Throwable t) {
-                            Log.v("ModifyProfileActivity", t.getLocalizedMessage());
+                            // Log.v("ModifyProfileActivity", t.getLocalizedMessage());
                         }
                     });
+
+                    if (delimgsig == 1) {
+                        Call<ResponseBody> call1 = serverService.upprofileImage(fileToUpload, filename);
+                        call1.enqueue(new Callback<ResponseBody>() {
+                            @Override
+                            public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                                Log.v("ModifyProfileActivity", "call1 is completed!");
+                            }
+
+                            @Override
+                            public void onFailure(Call<ResponseBody> call, Throwable t) {
+                                Log.v("ModifyProfileActivity", t.getLocalizedMessage());
+                            }
+                        });
+                    }
+                    ((StyleListActivity) StyleListActivity.currentfragment).onResume();
+                    ((LikeActivity) LikeActivity.currentfragment).onResume();
+                    ((ProfileActivity) ProfileActivity.currentfragment).onResume();
+                    ((SearchActivity) SearchActivity.currentfragment).onResume();
+                    finish();
                 }
-                ((StyleListActivity)StyleListActivity.currentfragment).onResume();
-                ((LikeActivity)LikeActivity.currentfragment).onResume();
-                ((ProfileActivity)ProfileActivity.currentfragment).onResume();
-                ((SearchActivity)SearchActivity.currentfragment).onResume();
-                finish();
             }
         });
     }

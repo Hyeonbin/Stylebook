@@ -105,6 +105,7 @@ public interface ServerService {
     Call<ResponseBody>addProfile(
             @Field("facebookid") String facebookid,
             @Field("name") String name,
+            @Field("profileimage") String profileimage,
             @Field("location") String location,
             @Field("style") String style,
             @Field("text") String text
@@ -115,6 +116,7 @@ public interface ServerService {
     Call<ResponseBody>modifyMyprofile(
             @Field("facebookid") String facebookid,
             @Field("name") String name,
+            @Field("profileimage") String profileimage,
             @Field("location") String location,
             @Field("style") String style,
             @Field("text") String text,

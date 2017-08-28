@@ -102,7 +102,8 @@ public class ProfileActivity extends Fragment{
                     JSONArray likedata = new JSONArray(jsonObject.getString("likedata"));
                     JSONArray commentdata = new JSONArray(jsonObject.getString("commentdata"));
                     JSONObject profileObject = profiledata.getJSONObject(0);
-                    Glide.with(getContext()).load(PROFILE_ADDRESS + AccessToken.getCurrentAccessToken().getUserId() + ".jpg").into(profile_image); //Todo : 프로필 사진 처리
+                    if(!profileObject.getString("profileimage").equals("no"))
+                        Glide.with(getContext()).load(PROFILE_ADDRESS + AccessToken.getCurrentAccessToken().getUserId() + ".jpg").into(profile_image); //Todo : 프로필 사진 처리
                     profile_name.setText(profileObject.getString("name"));
                     profile_location.setText(profileObject.getString("location"));
                     profile_style.setText(profileObject.getString("style"));
@@ -131,6 +132,7 @@ public class ProfileActivity extends Fragment{
             public void onClick(View view) {
                 Intent intent = new Intent(getActivity(), ModifyProfileActivity.class);
                 intent.putExtra("name", profile_profilelist.get(0).getName());
+                intent.putExtra("profileimage", profile_profilelist.get(0).getProfileimage());
                 intent.putExtra("location", profile_profilelist.get(0).getLocation());
                 intent.putExtra("style", profile_profilelist.get(0).getStyle());
                 intent.putExtra("text", profile_profilelist.get(0).getText());
@@ -168,7 +170,8 @@ public class ProfileActivity extends Fragment{
                     JSONArray likedata = new JSONArray(jsonObject.getString("likedata"));
                     JSONArray commentdata = new JSONArray(jsonObject.getString("commentdata"));
                     JSONObject profileObject = profiledata.getJSONObject(0);
-                    Glide.with(getContext()).load(PROFILE_ADDRESS + AccessToken.getCurrentAccessToken().getUserId() + ".jpg").into(profile_image); //Todo : 프로필 사진 처리
+                    if(!profileObject.getString("profileimage").equals("no"))
+                        Glide.with(getContext()).load(PROFILE_ADDRESS + AccessToken.getCurrentAccessToken().getUserId() + ".jpg").into(profile_image); //Todo : 프로필 사진 처리
                     profile_name.setText(profileObject.getString("name"));
                     profile_location.setText(profileObject.getString("location"));
                     profile_style.setText(profileObject.getString("style"));
@@ -197,6 +200,7 @@ public class ProfileActivity extends Fragment{
             public void onClick(View view) {
                 Intent intent = new Intent(getActivity(), ModifyProfileActivity.class);
                 intent.putExtra("name", profile_profilelist.get(0).getName());
+                intent.putExtra("profileimage", profile_profilelist.get(0).getProfileimage());
                 intent.putExtra("location", profile_profilelist.get(0).getLocation());
                 intent.putExtra("style", profile_profilelist.get(0).getStyle());
                 intent.putExtra("text", profile_profilelist.get(0).getText());
@@ -252,6 +256,7 @@ public class ProfileActivity extends Fragment{
         ProfileItem profileItem = new ProfileItem();
         profileItem.setFacebookid(jsonObject.getString("facebookid"));
         profileItem.setName(jsonObject.getString("name"));
+        profileItem.setProfileimage(jsonObject.getString("profileimage"));
         profileItem.setLocation(jsonObject.getString("location"));
         profileItem.setStyle(jsonObject.getString("style"));
         profileItem.setText(jsonObject.getString("text"));
