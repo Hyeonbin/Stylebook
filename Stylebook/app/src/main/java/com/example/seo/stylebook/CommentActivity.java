@@ -57,7 +57,7 @@ public class CommentActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_comment);
 
-        overridePendingTransition(R.anim.down_to_up, R.anim.up_to_down);
+        overridePendingTransition(R.anim.down_to_up, R.anim.pause);
 
         comment_listid = getIntent().getIntExtra("listid", -1);
         final RecyclerView comment_listview = (RecyclerView) findViewById(R.id.Sb_Comment_Recyclerview);
@@ -151,12 +151,19 @@ public class CommentActivity extends Activity {
                         Log.v("CommentActivity", t.getLocalizedMessage());
                     }
                 });
-                ((StyleListActivity)StyleListActivity.currentfragment).onResume();
-                ((LikeActivity)LikeActivity.currentfragment).onResume();
-                ((ProfileActivity)ProfileActivity.currentfragment).onResume();
-                ((SearchActivity)SearchActivity.currentfragment).onResume();
+                //((StyleListActivity)StyleListActivity.currentfragment).onResume();
+                //((LikeActivity)LikeActivity.currentfragment).onResume();
+                //((ProfileActivity)ProfileActivity.currentfragment).onResume();
+                //((SearchActivity)SearchActivity.currentfragment).onResume();
             }
         });
+    }
+
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+        super.finish();
+        overridePendingTransition(R.anim.pause, R.anim.up_to_down);
     }
 
     private void setCommentArray(JSONArray jsonArray) throws JSONException {

@@ -75,7 +75,7 @@
             android:layout_gravity="center_vertical"
             android:textSize="18dp"
             android:background="#ffffff"
-            android:hint="스타일을 설명해 주세요."/>
+            android:hint="스타일을 설명해 주세요"/>
 
     </LinearLayout>
 

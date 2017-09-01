@@ -52,20 +52,21 @@ router.get('/stylelist', function(req, res, next) {
   });
 });
 
-router.get('/stylelist/:profileimagename', function(res, req, next){
-  var profileimagename = req.params.profileimagename;
+router.get('/stylelist/:imagename', function(req, res, next){
+  var imagename = req.params.imagename;
 
-  res.sendFile(path.resolve('./image/stylelistimg/' + profileimagename));
+  res.sendFile(path.resolve('./image/stylelistimg/' + imagename));
 });
 
 router.post('/stylelist/addstyle', function(req, res, next) {
   var facebookid = req.body.facebookid;
+  var imagename = req.body.imagename;
   var text = req.body.text;
   var time = req.body.time;
 
   pool.getConnection(function(err, connection) {
-    var sqlForInsert = "INSERT INTO stylelistdata (facebookid, text, time) VALUES (?, ?, ?)";
-    var postData = [facebookid, text, time];
+    var sqlForInsert = "INSERT INTO stylelistdata (facebookid, imagename, text, time) VALUES (?, ?, ?, ?)";
+    var postData = [facebookid, imagename, text, time];
 
     connection.query(sqlForInsert, postData, function(err, result) {
       if(err)
@@ -285,6 +286,7 @@ router.post('/stylelist/deletestyle', function(req, res, next) {
   pool.getConnection(function(err, connection) {
     var sqlForSelect = "SELECT * FROM stylelistdata WHERE id = '" + listid + "'";
     var sqlForDelete = "DELETE FROM stylelistdata WHERE id = '" + listid + "'";
+    var sqlForDelete1 = "DELETE FROM commentdata WHERE listid = '" + listid + "'";
 
     connection.query(sqlForSelect, function(err, data) {
       if(err)
@@ -304,7 +306,14 @@ router.post('/stylelist/deletestyle', function(req, res, next) {
           console.error("err : ", err);
 
         console.log(JSON.stringify(result));
-        connection.release();
+
+        connection.query(sqlForDelete1, function(err, result) {
+          if(err)
+            console.error("err : ", err);
+
+          console.log(JSON.stringify(result));
+          connection.release();
+        });
       });
     });
   });
@@ -357,16 +366,27 @@ router.post('/profile/addprofile', function(req, res, next) {
   var postData = [facebookid, name, profileimage, location, style, text];
 
   pool.getConnection(function(err, connection) {
+    var sqlForSelect = "SELECT * FROM profiledata WHERE facebookid = '" + facebookid + "'";
     var sqlForInsert = "INSERT INTO profiledata (facebookid, name, profileimage, location, style, text) VALUES (?, ?, ?, ?, ?, ?)";
 
-    connection.query(sqlForInsert, postData, function(err, result) {
+    connection.query(sqlForSelect, function(err, data) {
       if(err)
         console.error("err : ", err);
 
-      console.log(JSON.stringify(result));
-      connection.release();
-    })
-  })
+      console.log(JSON.stringify(data));
+      if(data == null){
+        connection.query(sqlForInsert, postData, function(err, result) {
+          if(err)
+            console.error("err : ", err);
+
+          console.log(JSON.stringify(result));
+          connection.release();
+        });
+      } else {
+        connection.release();
+      }
+    });
+  });
 });
 
 router.post('/profile/modifyprofile', function(req, res, next) {
@@ -469,7 +489,7 @@ router.post('/search', function(req, res, next) {
   var keyword = req.body.keyword;
 
   pool.getConnection(function(err, connection) {
-    var sqlForSelect = "SELECT * FROM stylelistdata WHERE text = '" + keyword + "' ORDER BY id DESC";
+    var sqlForSelect = "SELECT * FROM stylelistdata WHERE text LIKE '%" + keyword + "%' ORDER BY id DESC";
     var sqlForSelect1 = "SELECT * FROM likedata";
     var sqlForSelect2 = "SELECT * FROM commentdata";
     var sqlForSelect3 = "SELECT * FROM profiledata";

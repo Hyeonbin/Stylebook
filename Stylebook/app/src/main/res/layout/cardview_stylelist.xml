@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
-    android:id="@+id/Sb_Cardview_Layout"
+<LinearLayout android:id="@+id/Sb_Cardview_Layout"
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="vertical"
     android:layout_width="match_parent"
@@ -11,9 +10,10 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         card_view:cardCornerRadius="10dp"
-        android:layout_marginTop="10dp"
+        android:layout_marginTop="5dp"
         android:layout_marginLeft="10dp"
-        android:layout_marginRight="10dp">
+        android:layout_marginRight="10dp"
+        android:layout_marginBottom="5dp">
 
         <LinearLayout
             android:orientation="vertical"
@@ -54,14 +54,14 @@
                     android:layout_height="0dp"
                     android:layout_weight="1"/>
 
-                <TextView
-                    android:id="@+id/Sb_Cardview_Time"
+                <ImageView
+                    android:id="@+id/Sb_Cardview_Settingbtn"
+                    android:layout_width="30dp"
+                    android:layout_height="21dp"
+                    android:src="@drawable/setting"
                     android:layout_gravity="center_vertical"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="시간 입니다."
-                    android:textSize="15dp"
-                    android:textColor="#c8c8c8" />
+                    android:visibility="gone"
+                    />
 
             </LinearLayout>
 
@@ -141,13 +141,14 @@
                     android:layout_height="0dp"
                     android:layout_weight="1"/>
 
-                <ImageView
-                    android:id="@+id/Sb_Cardview_Settingbtn"
-                    android:layout_width="30dp"
-                    android:layout_height="21dp"
-                    android:src="@drawable/setting"
-                    android:visibility="gone"
-                    />
+                <TextView
+                    android:id="@+id/Sb_Cardview_Time"
+                    android:layout_gravity="center_vertical"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="시간 입니다."
+                    android:textSize="15dp"
+                    android:textColor="#c8c8c8" />
 
             </LinearLayout>
 

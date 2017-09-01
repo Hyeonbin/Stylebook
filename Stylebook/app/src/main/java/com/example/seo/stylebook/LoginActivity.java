@@ -1,6 +1,7 @@
 package com.example.seo.stylebook;
 
 import android.app.Activity;
+import android.app.ProgressDialog;
 import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
@@ -56,12 +57,18 @@ public class LoginActivity extends Activity{
     Retrofit retrofit;
     ServerService serverService;
 
+    ProgressDialog progressDialog;
     boolean loginsig;
+    JSONArray profiledata = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
+
+        progressDialog = new ProgressDialog(LoginActivity.this);
+        progressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+        progressDialog.setMessage("프로필 데이터 생성 중");
 
         try {
             PackageInfo info = getPackageManager().getPackageInfo("com.example.seo.stylebook", PackageManager.GET_SIGNATURES);
@@ -86,15 +93,17 @@ public class LoginActivity extends Activity{
         login_btn.registerCallback(callbackManager, new FacebookCallback<LoginResult>() {
             @Override
             public void onSuccess(LoginResult loginResult) {
-                Call<ResponseBody> call1 = serverService.getProfile(AccessToken.getCurrentAccessToken().getUserId());
+                /*Call<ResponseBody> call1 = serverService.getProfile(AccessToken.getCurrentAccessToken().getUserId());
                 call1.enqueue(new Callback<ResponseBody>() {
                     @Override
                     public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
                         try {
                             String responseResult = response.body().string();
                             JSONArray jsonArray = new JSONArray(responseResult);
-                            Log.v("StyleListActivity", jsonArray.toString());
-                            loginsig = checkProfile(AccessToken.getCurrentAccessToken().getUserId(), jsonArray);
+                            JSONObject jsonObject = jsonArray.getJSONObject(0);
+                            profiledata = new JSONArray(jsonObject.getString("profiledata"));
+                            loginsig = checkProfile();
+                            Log.v("LoginActivity", profiledata.toString());
                         } catch (IOException e) {
                             e.printStackTrace();
                         } catch (JSONException e) {
@@ -107,54 +116,55 @@ public class LoginActivity extends Activity{
 
                     }
                 });
-                if(!loginsig) {
-                    GraphRequest graphRequest = GraphRequest.newMeRequest(AccessToken.getCurrentAccessToken(), new GraphRequest.GraphJSONObjectCallback() {
-                        @Override
-                        public void onCompleted(JSONObject object, GraphResponse response) {
-                            Call<ResponseBody> call = null;
-                            try {
-                                call = serverService.addProfile(
-                                        AccessToken.getCurrentAccessToken().getUserId(),
-                                        object.getString("name"),
-                                        "no",
-                                        null,
-                                        null,
-                                        null
-                                );
-                            } catch (JSONException e) {
-                                e.printStackTrace();
+                if(!loginsig) {*/
+                GraphRequest graphRequest = GraphRequest.newMeRequest(AccessToken.getCurrentAccessToken(), new GraphRequest.GraphJSONObjectCallback() {
+                    @Override
+                    public void onCompleted(JSONObject object, GraphResponse response) {
+                        Call<ResponseBody> call = null;
+                        try {
+                            call = serverService.addProfile(
+                                    AccessToken.getCurrentAccessToken().getUserId(),
+                                    object.getString("name"),
+                                    "no",
+                                    null,
+                                    null,
+                                    null
+                            );
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+
+                        call.enqueue(new Callback<ResponseBody>() {
+                            @Override
+                            public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+
                             }
 
-                            call.enqueue(new Callback<ResponseBody>() {
-                                @Override
-                                public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                            @Override
+                            public void onFailure(Call<ResponseBody> call, Throwable t) {
 
-                                }
+                            }
+                        });
+                        Intent intent = new Intent(LoginActivity.this, MainActivity.class);
+                        startActivity(intent);
+                    }
+                });
+                Bundle parameters = new Bundle();
+                parameters.putString("fields", "id,name,email,gender, birthday,first_name,last_name");
+                graphRequest.setParameters(parameters);
+                graphRequest.executeAsync();
 
-                                @Override
-                                public void onFailure(Call<ResponseBody> call, Throwable t) {
-
-                                }
-                            });
-                            Intent intent = new Intent(LoginActivity.this, MainActivity.class);
-                            startActivity(intent);
-                        }
-                    });
-                    Bundle parameters = new Bundle();
-                    parameters.putString("fields", "id,name,email,gender, birthday,first_name,last_name");
-                    graphRequest.setParameters(parameters);
-                    graphRequest.executeAsync();
-                } else {
-                    Intent intent = new Intent(LoginActivity.this, MainActivity.class);
-                    startActivity(intent);
-                }
+                progressDialog.show();
                 new Handler().postDelayed(new Runnable() {
                     @Override
                     public void run() {
-                        LoginActivity.this.finish();
+                        Intent intent = new Intent(LoginActivity.this, MainActivity.class);
+                        startActivity(intent);
+                        finish();
                     }
-                }, 1000);
+                }, 5000);
             }
+
 
             @Override
             public void onCancel() {
@@ -165,6 +175,8 @@ public class LoginActivity extends Activity{
             public void onError(FacebookException error) {
 
             }
+
+
         });
     }
 
@@ -174,10 +186,10 @@ public class LoginActivity extends Activity{
         callbackManager.onActivityResult(requestCode, resultCode, data);
     }
 
-    private boolean checkProfile(String facebookid, JSONArray jsonArray) throws JSONException
+    private boolean checkProfile() throws JSONException
     {
-        for(int i = 0; i < jsonArray.length(); i++){
-            if(jsonArray.getJSONObject(i).getString("facebookid").equals(facebookid))
+        for(int i = 0; i < profiledata.length(); i++){
+            if(profiledata.getJSONObject(i).getString("facebookid").equals(AccessToken.getCurrentAccessToken().getUserId()))
                 return true;
         }
 

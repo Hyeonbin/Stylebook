@@ -3,6 +3,7 @@ package com.example.seo.stylebook;
 import android.Manifest;
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -13,6 +14,7 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.Handler;
 import android.provider.MediaStore;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.PermissionChecker;
@@ -73,6 +75,8 @@ public class AddStyleActivity extends Activity {
     private String absolutePath = null;
     private String strPhotoName = null;
 
+    ProgressDialog progressDialog;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -82,6 +86,10 @@ public class AddStyleActivity extends Activity {
         addstyle_sendbtn = (ImageView)findViewById(R.id.Sb_Addstyle_Sendbtn);
         addstyle_image = (ImageView)findViewById(R.id.Sb_Addstyle_Image);
         addstyle_text = (EditText)findViewById(R.id.Sb_Addstyle_Text);
+
+        progressDialog = new ProgressDialog(AddStyleActivity.this);
+        progressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+        progressDialog.setMessage("데이터 저장 중");
 
         addstyle_cancelbtn.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -127,7 +135,7 @@ public class AddStyleActivity extends Activity {
 
                         @Override
                         public void onFailure(Call<ResponseBody> call, Throwable t) {
-                            Log.v("AddStyleActivity", t.getLocalizedMessage());
+                            //Log.v("AddStyleActivity", t.getLocalizedMessage());
                         }
                     });
                     Call<ResponseBody> call1 = serverService.upImage(fileToUpload, filename);
@@ -139,14 +147,20 @@ public class AddStyleActivity extends Activity {
 
                         @Override
                         public void onFailure(Call<ResponseBody> call, Throwable t) {
-                            Log.v("AddStyleActivity", t.getLocalizedMessage());
+                            //Log.v("AddStyleActivity", t.getLocalizedMessage());
                         }
                     });
+                    progressDialog.show();
                     ((StyleListActivity)StyleListActivity.currentfragment).onResume();
-                    ((LikeActivity)LikeActivity.currentfragment).onResume();
-                    ((ProfileActivity)ProfileActivity.currentfragment).onResume();
-                    ((SearchActivity)SearchActivity.currentfragment).onResume();
-                    finish();
+                    //((LikeActivity)LikeActivity.currentfragment).onResume();
+                    //((ProfileActivity)ProfileActivity.currentfragment).onResume();
+                    //((SearchActivity)SearchActivity.currentfragment).onResume();
+                    new Handler().postDelayed(new Runnable() {
+                        @Override
+                        public void run() {
+                            finish();
+                        }
+                    }, 5000);
                 }
            }
         });

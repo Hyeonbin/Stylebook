@@ -3,6 +3,7 @@ package com.example.seo.stylebook;
 import android.Manifest;
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
@@ -12,6 +13,7 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.Handler;
 import android.provider.MediaStore;
 import android.support.annotation.Nullable;
 import android.util.Log;
@@ -58,11 +60,17 @@ public class ModifyStyleActivity extends Activity {
     private static final int REQUEST_PHOTO_ALBUM = 1; // 사진앨범 시그널 변수
     private static final int REQUEST_CROP = 2; // 사진을 크롭하기 위한 시그널 변수
 
-    String STYLE_ADDRESS = "http://10.0.2.2:3000/stylelist/";
+    String STYLE_ADDRESS = ServerService.API_URL + "stylelist/";
 
     private Uri ImageCaptureUri;
     private String absolutePath = null;
     private String strPhotoName;
+
+    File file;
+    MultipartBody.Part fileToUpload;
+    RequestBody filename;
+
+    ProgressDialog progressDialog;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -73,6 +81,10 @@ public class ModifyStyleActivity extends Activity {
         ImageView modifystyle_sendbtn = (ImageView)findViewById(R.id.Sb_Modifystyle_Sendbtn);
         ImageView modifystyle_image = (ImageView)findViewById(R.id.Sb_Modifystyle_Image);
         final EditText modifystyle_text = (EditText)findViewById(R.id.Sb_Modifystyle_Text);
+
+        progressDialog = new ProgressDialog(ModifyStyleActivity.this);
+        progressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+        progressDialog.setMessage("데이터 수정 중");
 
         Glide.with(getApplicationContext()).load(STYLE_ADDRESS + getIntent().getStringExtra("image")).into(modifystyle_image);
         modifystyle_text.setText(getIntent().getStringExtra("text"));
@@ -126,12 +138,12 @@ public class ModifyStyleActivity extends Activity {
 
                 int delimgsig = 0;
                 String imagename;
-                File file = new File(absolutePath);
-                RequestBody mFile = RequestBody.create(MediaType.parse("image/*"), file);
-                MultipartBody.Part fileToUpload = MultipartBody.Part.createFormData("file", file.getName(), mFile);
-                RequestBody filename = RequestBody.create(MediaType.parse("text/plain"), file.getName());
 
-                if(file.exists()) {
+                if(absolutePath != null) {
+                    File file = new File(absolutePath);
+                    RequestBody mFile = RequestBody.create(MediaType.parse("image/*"), file);
+                    fileToUpload = MultipartBody.Part.createFormData("file", file.getName(), mFile);
+                    filename = RequestBody.create(MediaType.parse("text/plain"), file.getName());
                     delimgsig = 1;
                     imagename = file.getName();
                 } else {
@@ -154,7 +166,7 @@ public class ModifyStyleActivity extends Activity {
 
                     @Override
                     public void onFailure(Call<ResponseBody> call, Throwable t) {
-                        Log.v("ModifyStyleActivity", t.getLocalizedMessage());
+                        //Log.v("ModifyStyleActivity", t.getLocalizedMessage());
                     }
                 });
 
@@ -168,15 +180,18 @@ public class ModifyStyleActivity extends Activity {
 
                         @Override
                         public void onFailure(Call<ResponseBody> call, Throwable t) {
-                            Log.v("ModifyStyleActivity", t.getLocalizedMessage());
+                            //Log.v("ModifyStyleActivity", t.getLocalizedMessage());
                         }
                     });
                 }
-                ((StyleListActivity)StyleListActivity.currentfragment).onResume();
-                ((LikeActivity)LikeActivity.currentfragment).onResume();
-                ((ProfileActivity)ProfileActivity.currentfragment).onResume();
-                ((SearchActivity)SearchActivity.currentfragment).onResume();
-                finish();
+                progressDialog.show();
+                resumeForFragment(getIntent().getIntExtra("fragment", -1));
+                new Handler().postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        finish();
+                    }
+                }, 5000);
             }
         });
 
@@ -334,5 +349,16 @@ public class ModifyStyleActivity extends Activity {
                     .setPermissions(Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.CAMERA, Manifest.permission.ACCESS_NETWORK_STATE)
                     .check();
         }
+    }
+
+    public void resumeForFragment(int n){
+        if(n == 0)
+            ((StyleListActivity)StyleListActivity.currentfragment).onResume();
+        else if(n == 1)
+            ((LikeActivity)LikeActivity.currentfragment).onResume();
+        else if(n == 2)
+            ((SearchActivity)SearchActivity.currentfragment).onResume();
+        else
+            ((ProfileActivity)ProfileActivity.currentfragment).onResume();
     }
 }

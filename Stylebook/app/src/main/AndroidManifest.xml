@@ -39,10 +39,15 @@
             </intent-filter>
         </activity>
         <activity android:name=".MainActivity"/>
-        <activity android:name=".AddStyleActivity"/>
-        <activity android:name=".CommentActivity"/>
+        <activity android:name=".AddStyleActivity"
+            android:windowSoftInputMode="stateAlwaysHidden"/>
+        <activity android:name=".CommentActivity"
+            android:windowSoftInputMode="stateAlwaysHidden"/>
         <activity android:name=".LoginActivity"/>
-        <activity android:name=".ModifyProfileActivity"/>
+        <activity android:name=".ModifyProfileActivity"
+            android:windowSoftInputMode="stateAlwaysHidden"/>
+        <activity android:name=".ModifyStyleActivity"
+            android:windowSoftInputMode="stateAlwaysHidden"/>
     </application>
 
 </manifest>

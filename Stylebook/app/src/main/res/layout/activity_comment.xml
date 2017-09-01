@@ -27,7 +27,7 @@
             android:layout_gravity="center_vertical"
             android:textSize="18dp"
             android:background="#ffffff"
-            android:hint="댓글을 입력하세요."/>
+            android:hint="댓글을 입력하세요"/>
 
         <ImageView
             android:id="@+id/Sb_Comment_Send"

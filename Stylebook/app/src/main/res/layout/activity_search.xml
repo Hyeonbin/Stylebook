@@ -23,7 +23,9 @@
             android:layout_gravity="center_vertical"
             android:textSize="18dp"
             android:background="#ffffff"
-            android:hint="검색어를 입력하세요."/>
+            android:hint="검색어를 입력하세요"
+            android:focusable="true"
+            android:focusableInTouchMode="true"/>
 
         <ImageView
             android:id="@+id/Sb_Search_Enter"
@@ -39,7 +41,8 @@
         android:id="@+id/Sb_Search_Recyclerview"
         android:layout_height="wrap_content"
         android:layout_width="match_parent"
-        android:layout_marginBottom="10dp"
+        android:layout_marginTop="5dp"
+        android:layout_marginBottom="5dp"
         />
 
 </LinearLayout>

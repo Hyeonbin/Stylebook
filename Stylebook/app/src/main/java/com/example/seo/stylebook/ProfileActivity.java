@@ -56,7 +56,7 @@ public class ProfileActivity extends Fragment{
     TextView profile_text;
     RecyclerView profile_recyclerview;
 
-    String PROFILE_ADDRESS = "http://10.0.2.2:3000/profile/";
+    String PROFILE_ADDRESS = ServerService.API_URL + "profile/";
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -103,16 +103,16 @@ public class ProfileActivity extends Fragment{
                     JSONArray commentdata = new JSONArray(jsonObject.getString("commentdata"));
                     JSONObject profileObject = profiledata.getJSONObject(0);
                     if(!profileObject.getString("profileimage").equals("no"))
-                        Glide.with(getContext()).load(PROFILE_ADDRESS + AccessToken.getCurrentAccessToken().getUserId() + ".jpg").into(profile_image); //Todo : 프로필 사진 처리
+                        Glide.with(getContext()).load(PROFILE_ADDRESS + AccessToken.getCurrentAccessToken().getUserId()).into(profile_image); //Todo : 프로필 사진 처리
                     profile_name.setText(profileObject.getString("name"));
                     profile_location.setText(profileObject.getString("location"));
                     profile_style.setText(profileObject.getString("style"));
                     profile_text.setText(profileObject.getString("text"));
-                    setStylelistArray(stylelistdata);
-                    setLikelistArray(likedata);
-                    setCommentlistArray(commentdata);
-                    setProfilelistArray(profiledata);
-                    profile_recyclerview.setAdapter(new StyleListAdapter(getContext(), profile_arraylist, profile_likelist, profile_commentlist, profile_profilelist));
+                    profile_arraylist = SetArrayListUtils.setStylelistArray(stylelistdata);
+                    profile_likelist = SetArrayListUtils.setLikelistArray(likedata);
+                    profile_commentlist = SetArrayListUtils.setCommentlistArray(commentdata);
+                    profile_profilelist = SetArrayListUtils.setProfilelistArray(profiledata);
+                    profile_recyclerview.setAdapter(new StyleListAdapter(getContext(), profile_arraylist, profile_likelist, profile_commentlist, profile_profilelist, currentfragment));
                     Log.v("ProfileActivity", "Connect Completed!");
                 } catch (IOException e) {
                     e.printStackTrace();
@@ -123,7 +123,7 @@ public class ProfileActivity extends Fragment{
 
             @Override
             public void onFailure(Call<ResponseBody> call, Throwable t) {
-                Log.v("ProfileActivity", t.getLocalizedMessage());
+                //Log.v("ProfileActivity", t.getLocalizedMessage());
             }
         });
 
@@ -171,16 +171,16 @@ public class ProfileActivity extends Fragment{
                     JSONArray commentdata = new JSONArray(jsonObject.getString("commentdata"));
                     JSONObject profileObject = profiledata.getJSONObject(0);
                     if(!profileObject.getString("profileimage").equals("no"))
-                        Glide.with(getContext()).load(PROFILE_ADDRESS + AccessToken.getCurrentAccessToken().getUserId() + ".jpg").into(profile_image); //Todo : 프로필 사진 처리
+                        Glide.with(getContext()).load(PROFILE_ADDRESS + AccessToken.getCurrentAccessToken().getUserId()).into(profile_image); //Todo : 프로필 사진 처리
                     profile_name.setText(profileObject.getString("name"));
                     profile_location.setText(profileObject.getString("location"));
                     profile_style.setText(profileObject.getString("style"));
                     profile_text.setText(profileObject.getString("text"));
-                    setStylelistArray(stylelistdata);
-                    setLikelistArray(likedata);
-                    setCommentlistArray(commentdata);
-                    setProfilelistArray(profiledata);
-                    profile_recyclerview.setAdapter(new StyleListAdapter(getContext(), profile_arraylist, profile_likelist, profile_commentlist, profile_profilelist));
+                    profile_arraylist = SetArrayListUtils.setStylelistArray(stylelistdata);
+                    profile_likelist = SetArrayListUtils.setLikelistArray(likedata);
+                    profile_commentlist = SetArrayListUtils.setCommentlistArray(commentdata);
+                    profile_profilelist = SetArrayListUtils.setProfilelistArray(profiledata);
+                    profile_recyclerview.setAdapter(new StyleListAdapter(getContext(), profile_arraylist, profile_likelist, profile_commentlist, profile_profilelist, currentfragment));
                     Log.v("ProfileActivity", "Connect Completed!");
                 } catch (IOException e) {
                     e.printStackTrace();
@@ -191,7 +191,7 @@ public class ProfileActivity extends Fragment{
 
             @Override
             public void onFailure(Call<ResponseBody> call, Throwable t) {
-                Log.v("ProfileActivity", t.getLocalizedMessage());
+                //Log.v("ProfileActivity", t.getLocalizedMessage());
             }
         });
 
@@ -209,57 +209,4 @@ public class ProfileActivity extends Fragment{
         });
     }
 
-    private void setStylelistArray(JSONArray jsonArray) throws JSONException {
-        profile_arraylist = new ArrayList<>();
-        for(int i = 0; i < jsonArray.length(); i++){
-            JSONObject jsonObject = jsonArray.getJSONObject(i);
-            StyleItem styleItem = new StyleItem();
-            styleItem.setId(jsonObject.getInt("id"));
-            styleItem.setFacebookid(jsonObject.getString("facebookid"));
-            styleItem.setImagename(jsonObject.getString("imagename"));
-            styleItem.setText(jsonObject.getString("text"));
-            styleItem.setTime(jsonObject.getString("time"));
-            profile_arraylist.add(styleItem);
-        }
-    }
-
-    private void setLikelistArray(JSONArray jsonArray) throws JSONException {
-        profile_likelist = new ArrayList<>();
-        for(int i = 0; i < jsonArray.length(); i++){
-            JSONObject jsonObject = jsonArray.getJSONObject(i);
-            LikeItem likeitem = new LikeItem();
-            likeitem.setId(jsonObject.getInt("id"));
-            likeitem.setListid(jsonObject.getInt("listid"));
-            likeitem.setFacebookid(jsonObject.getString("facebookid"));
-            likeitem.setTime(jsonObject.getString("time"));
-            profile_likelist.add(likeitem);
-        }
-    }
-
-    private void setCommentlistArray(JSONArray jsonArray) throws JSONException {
-        profile_commentlist = new ArrayList<>();
-        for (int i = 0; i < jsonArray.length(); i++){
-            JSONObject jsonObject = jsonArray.getJSONObject(i);
-            CommentItem commentItem = new CommentItem();
-            commentItem.setId(jsonObject.getInt("id"));
-            commentItem.setListid(jsonObject.getInt("listid"));
-            commentItem.setFacebookid(jsonObject.getString("facebookid"));
-            commentItem.setText(jsonObject.getString("text"));
-            commentItem.setTime(jsonObject.getString("time"));
-            profile_commentlist.add(commentItem);
-        }
-    }
-
-    private void setProfilelistArray(JSONArray jsonArray) throws JSONException {
-        profile_profilelist = new ArrayList<>();
-        JSONObject jsonObject = jsonArray.getJSONObject(0);
-        ProfileItem profileItem = new ProfileItem();
-        profileItem.setFacebookid(jsonObject.getString("facebookid"));
-        profileItem.setName(jsonObject.getString("name"));
-        profileItem.setProfileimage(jsonObject.getString("profileimage"));
-        profileItem.setLocation(jsonObject.getString("location"));
-        profileItem.setStyle(jsonObject.getString("style"));
-        profileItem.setText(jsonObject.getString("text"));
-        profile_profilelist.add(profileItem);
-    }
 }

@@ -17,7 +17,7 @@ router.get('/', function(req, res, next) {
   res.render('index', { title: 'Express' });
 });
 
-router.get('/load', function(req, res, next) {
+router.get('/load/:picture', function(req, res, next) {
   /*fs.readFile('./uploads/tmp_1501405320848.jpg', function(error, data) {
     var insert = {
       image: data
@@ -25,7 +25,8 @@ router.get('/load', function(req, res, next) {
     var insertString = JSON.stringify(insert);
     res.sen(insertString);
   });*/
-  res.sendFile(path.resolve('./uploads/tmp_1501405320848.jpg'));
+  var picture = req.params.picture;
+  res.sendFile(path.resolve('./uploads/' + picture));
 });
 
 router.post('/image', function(req, res, next){

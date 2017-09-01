@@ -3,6 +3,7 @@ package com.example.seo.stylebook;
 import android.Manifest;
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
@@ -12,6 +13,7 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.Handler;
 import android.provider.MediaStore;
 import android.util.Log;
 import android.view.View;
@@ -60,8 +62,10 @@ public class ModifyProfileActivity extends Activity{
     private String absolutePath = null;
     private String strPhotoName;
 
-    String PROFILE_ADDRESS = "http://10.0.2.2:3000/profile/";
+    String PROFILE_ADDRESS = ServerService.API_URL + "profile/";
     String profileimage = null;
+
+    ProgressDialog progressDialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -78,13 +82,17 @@ public class ModifyProfileActivity extends Activity{
         final EditText modifyprofile_style = (EditText)findViewById(R.id.Sb_Modifyprofile_Style);
         final EditText modifyprofile_text = (EditText)findViewById(R.id.Sb_Modifyprofile_Text);
 
+        progressDialog = new ProgressDialog(ModifyProfileActivity.this);
+        progressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+        progressDialog.setMessage("데이터 수정 중");
+
         profileimage = getIntent().getStringExtra("profileimage");
         if(!profileimage.equals("no"))
-            Glide.with(getApplicationContext()).load(PROFILE_ADDRESS + AccessToken.getCurrentAccessToken() + ".jpg").into(modifyprofile_image); //Todo : 프로필 사진 처리
-        modifyprofile_name.setHint(getIntent().getStringExtra("name"));
-        modifyprofile_location.setHint(getIntent().getStringExtra("location"));
-        modifyprofile_style.setHint(getIntent().getStringExtra("style"));
-        modifyprofile_text.setHint(getIntent().getStringExtra("text"));
+            Glide.with(getApplicationContext()).load(PROFILE_ADDRESS + AccessToken.getCurrentAccessToken().getUserId()).into(modifyprofile_image); //Todo : 프로필 사진 처리
+        modifyprofile_name.setText(getIntent().getStringExtra("name"));
+        modifyprofile_location.setText(getIntent().getStringExtra("location"));
+        modifyprofile_style.setText(getIntent().getStringExtra("style"));
+        modifyprofile_text.setText(getIntent().getStringExtra("text"));
 
         modifyprofile_image.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -190,11 +198,17 @@ public class ModifyProfileActivity extends Activity{
                             }
                         });
                     }
-                    ((StyleListActivity) StyleListActivity.currentfragment).onResume();
-                    ((LikeActivity) LikeActivity.currentfragment).onResume();
+                    progressDialog.show();
+                    //((StyleListActivity) StyleListActivity.currentfragment).onResume();
+                    //((LikeActivity) LikeActivity.currentfragment).onResume();
                     ((ProfileActivity) ProfileActivity.currentfragment).onResume();
-                    ((SearchActivity) SearchActivity.currentfragment).onResume();
-                    finish();
+                    //((SearchActivity) SearchActivity.currentfragment).onResume();
+                    new Handler().postDelayed(new Runnable() {
+                        @Override
+                        public void run() {
+                            finish();
+                        }
+                    }, 5000);
                 }
             }
         });

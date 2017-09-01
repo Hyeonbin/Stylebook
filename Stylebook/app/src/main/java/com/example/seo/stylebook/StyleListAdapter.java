@@ -1,9 +1,12 @@
 package com.example.seo.stylebook;
 
 import android.app.AlertDialog;
+import android.app.Fragment;
+import android.app.FragmentTransaction;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.os.Handler;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -37,6 +40,7 @@ import retrofit2.Retrofit;
  */
 public class StyleListAdapter extends RecyclerView.Adapter<StyleListViewHolder> {
     Context context;
+    android.support.v4.app.Fragment fragment;
     ArrayList<StyleItem> items;
     ArrayList<LikeItem> likeitems;
     ArrayList<CommentItem> commentItems;
@@ -45,15 +49,16 @@ public class StyleListAdapter extends RecyclerView.Adapter<StyleListViewHolder> 
     ServerService serverService;
     OkHttpClient like_client;
 
-    String PROFILE_ADDRESS = "http://10.0.2.2:3000/profile/";
-    String STYLE_ADDRESS = "http://10.0.2.2:3000/stylelist/";
+    String PROFILE_ADDRESS = ServerService.API_URL + "profile/";
+    String STYLE_ADDRESS = ServerService.API_URL + "stylelist/";
 
-    public StyleListAdapter(Context context, ArrayList<StyleItem> items, ArrayList<LikeItem> likeitems, ArrayList<CommentItem> commentItems, ArrayList<ProfileItem> profileItems) {
+    public StyleListAdapter(Context context, ArrayList<StyleItem> items, ArrayList<LikeItem> likeitems, ArrayList<CommentItem> commentItems, ArrayList<ProfileItem> profileItems, android.support.v4.app.Fragment fragment) {
         this.context = context;
         this.items = items;
         this.likeitems = likeitems;
         this.commentItems = commentItems;
         this.profileItems = profileItems;
+        this.fragment = fragment;
     }
 
     @Override
@@ -75,7 +80,8 @@ public class StyleListAdapter extends RecyclerView.Adapter<StyleListViewHolder> 
         serverService = retrofit.create(ServerService.class);
 
         final StyleItem item = items.get(position);
-        Glide.with(context).load(PROFILE_ADDRESS + item.getFacebookid() + ".jpg").into(holder.stylelist_publisherimage);
+        if(!item.getImagename().equals("no"))
+            Glide.with(context).load(PROFILE_ADDRESS + item.getFacebookid()).into(holder.stylelist_publisherimage);
         holder.stylelist_publishername.setText(""+getName(item.getFacebookid(), profileItems));
         Glide.with(context).load(STYLE_ADDRESS + item.getImagename()).into(holder.stylelist_image);
         holder.stylelist_text.setText(item.getText());
@@ -96,13 +102,13 @@ public class StyleListAdapter extends RecyclerView.Adapter<StyleListViewHolder> 
             public void onClick(View view) {
                 // Todo : 좋아요 버튼 처리 요망, 좋아요 버튼 색 처리
                 if(identifyLike(item.getId(), item.getFacebookid(), likeitems) == 0) {
-                    //holder.stylelist_like.setImageResource(R.drawable.like_red);
-                    /*LikeItem likeItem = new LikeItem();
+                    holder.stylelist_like.setImageResource(R.drawable.like_red);
+                    LikeItem likeItem = new LikeItem();
                     likeItem.setFacebookid(AccessToken.getCurrentAccessToken().getUserId());
                     likeItem.setListid(item.getId());
                     likeItem.setTime(String.valueOf(System.currentTimeMillis()));
                     likeitems.add(likeItem);
-                    holder.stylelist_likenum.setText(""+getLikenum(item.getId(), likeitems));*/
+                    holder.stylelist_likenum.setText(""+getLikenum(item.getId(), likeitems));
                     Call<ResponseBody> call2 = serverService.likebtnClicked(
                             item.getId(),
                             AccessToken.getCurrentAccessToken().getUserId(),
@@ -120,9 +126,9 @@ public class StyleListAdapter extends RecyclerView.Adapter<StyleListViewHolder> 
                         }
                     });
                 } else {
-                    //holder.stylelist_like.setImageResource(R.drawable.like);
-                    //deleteLikelist(item.getId(), AccessToken.getCurrentAccessToken().getUserId(), likeitems);
-                    //holder.stylelist_likenum.setText(""+getLikenum(item.getId(), likeitems));
+                    holder.stylelist_like.setImageResource(R.drawable.like);
+                    deleteLikelist(item.getId(), AccessToken.getCurrentAccessToken().getUserId(), likeitems);
+                    holder.stylelist_likenum.setText(""+getLikenum(item.getId(), likeitems));
                     Call<ResponseBody> call2 = serverService.likebtnUnclicked(
                             item.getId(),
                             AccessToken.getCurrentAccessToken().getUserId()
@@ -140,10 +146,15 @@ public class StyleListAdapter extends RecyclerView.Adapter<StyleListViewHolder> 
                     });
 
                 }
+                /*
                 ((StyleListActivity)StyleListActivity.currentfragment).onResume();
                 ((LikeActivity)LikeActivity.currentfragment).onResume();
                 ((ProfileActivity)ProfileActivity.currentfragment).onResume();
-                ((SearchActivity)SearchActivity.currentfragment).onResume();
+                ((SearchActivity)SearchActivity.currentfragment).onResume();*/
+                //fragment.onResume();
+                //((LikeActivity)LikeActivity.currentfragment).onResume();
+                if(fragment != LikeActivity.currentfragment)
+                    ((LikeActivity)LikeActivity.currentfragment).onResume();
             }
         });
 
@@ -157,6 +168,7 @@ public class StyleListAdapter extends RecyclerView.Adapter<StyleListViewHolder> 
                         intent.putExtra("image", item.getImagename());
                         intent.putExtra("text", item.getText());
                         intent.putExtra("listid", item.getId());
+                        intent.putExtra("fragment", identifyFragment(fragment));
                         v.getContext().startActivity(intent);
                     }
                 };
@@ -180,10 +192,7 @@ public class StyleListAdapter extends RecyclerView.Adapter<StyleListViewHolder> 
 
                                     }
                                 });
-                                ((StyleListActivity)StyleListActivity.currentfragment).onResume();
-                                ((LikeActivity)LikeActivity.currentfragment).onResume();
-                                ((ProfileActivity)ProfileActivity.currentfragment).onResume();
-                                ((SearchActivity)SearchActivity.currentfragment).onResume();
+                                fragment.onResume();
                             }
                         };
                         DialogInterface.OnClickListener CancelListener = new DialogInterface.OnClickListener() {
@@ -194,7 +203,7 @@ public class StyleListAdapter extends RecyclerView.Adapter<StyleListViewHolder> 
                         };
 
                         new AlertDialog.Builder(context, R.style.MyAlertDialogTheme)
-                                .setTitle("해당 게시물을 삭제하시겠습니까?                ")
+                                .setTitle("해당 게시물을 삭제하시겠습니까?            ")
                                 .setPositiveButton("확인", ApplyListener)
                                 .setNegativeButton("취소", CancelListener)
                                 .show();
@@ -271,5 +280,16 @@ public class StyleListAdapter extends RecyclerView.Adapter<StyleListViewHolder> 
             if(likeitems.get(i).getListid() == listid && likeitems.get(i).getFacebookid().equals(facebookid))
                 likeItems.remove(i);
         }
+    }
+
+    public int identifyFragment(android.support.v4.app.Fragment fragment){
+        if(fragment == StyleListActivity.currentfragment)
+            return 0;
+        else if(fragment == LikeActivity.currentfragment)
+            return 1;
+        else if(fragment == SearchActivity.currentfragment)
+            return 2;
+        else
+            return 3;
     }
 }

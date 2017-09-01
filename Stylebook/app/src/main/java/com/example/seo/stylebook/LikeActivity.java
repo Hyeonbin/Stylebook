@@ -83,11 +83,11 @@ public class LikeActivity extends Fragment {
                     JSONArray commentdata = new JSONArray(jsonObject.getString("commentdata"));
                     JSONArray stylelistdata = new JSONArray(jsonObject.getString("stylelistdata"));
                     JSONArray profiledata = new JSONArray(jsonObject.getString("profiledata"));
-                    setLikelistArray(likedataforstylelist);
-                    setCommentlistArray(commentdata);
-                    setStylelistArray(stylelistdata, likedata);
-                    setProfilelistArray(profiledata);
-                    like_styleListAdapter = new StyleListAdapter(getContext(), like_arraylist, like_likelistForStylelist, like_commentlist, like_profilelist);
+                    like_likelistForStylelist = SetArrayListUtils.setLikelistArray(likedataforstylelist);
+                    like_commentlist = SetArrayListUtils.setCommentlistArray(commentdata);
+                    like_arraylist = SetArrayListUtils.setStylelistArray(stylelistdata, likedata);
+                    like_profilelist = SetArrayListUtils.setProfilelistArray(profiledata);
+                    like_styleListAdapter = new StyleListAdapter(getContext(), like_arraylist, like_likelistForStylelist, like_commentlist, like_profilelist, currentfragment);
                     like_recyclerview.setAdapter(like_styleListAdapter);
                     like_styleListAdapter.notifyDataSetChanged();
                     Log.v("LikeActivity", "Call is completed!");
@@ -121,11 +121,11 @@ public class LikeActivity extends Fragment {
                             JSONArray commentdata = new JSONArray(jsonObject.getString("commentdata"));
                             JSONArray stylelistdata = new JSONArray(jsonObject.getString("stylelistdata"));
                             JSONArray profiledata = new JSONArray(jsonObject.getString("profiledata"));
-                            setLikelistArray(likedataforstylelist);
-                            setCommentlistArray(commentdata);
-                            setStylelistArray(stylelistdata, likedata);
-                            setProfilelistArray(profiledata);
-                            like_styleListAdapter = new StyleListAdapter(getContext(), like_arraylist, like_likelistForStylelist, like_commentlist, like_profilelist);
+                            like_likelistForStylelist = SetArrayListUtils.setLikelistArray(likedataforstylelist);
+                            like_commentlist = SetArrayListUtils.setCommentlistArray(commentdata);
+                            like_arraylist = SetArrayListUtils.setStylelistArray(stylelistdata, likedata);
+                            like_profilelist = SetArrayListUtils.setProfilelistArray(profiledata);
+                            like_styleListAdapter = new StyleListAdapter(getContext(), like_arraylist, like_likelistForStylelist, like_commentlist, like_profilelist, currentfragment);
                             like_recyclerview.setAdapter(like_styleListAdapter);
                             like_styleListAdapter.notifyDataSetChanged();
                             Log.v("LikeActivity", "Call is completed!");
@@ -175,11 +175,11 @@ public class LikeActivity extends Fragment {
                     JSONArray commentdata = new JSONArray(jsonObject.getString("commentdata"));
                     JSONArray stylelistdata = new JSONArray(jsonObject.getString("stylelistdata"));
                     JSONArray profiledata = new JSONArray(jsonObject.getString("profiledata"));
-                    setLikelistArray(likedataforstylelist);
-                    setCommentlistArray(commentdata);
-                    setStylelistArray(stylelistdata, likedata);
-                    setProfilelistArray(profiledata);
-                    like_styleListAdapter = new StyleListAdapter(getContext(), like_arraylist, like_likelistForStylelist, like_commentlist, like_profilelist);
+                    like_likelistForStylelist = SetArrayListUtils.setLikelistArray(likedataforstylelist);
+                    like_commentlist = SetArrayListUtils.setCommentlistArray(commentdata);
+                    like_arraylist = SetArrayListUtils.setStylelistArray(stylelistdata, likedata);
+                    like_profilelist = SetArrayListUtils.setProfilelistArray(profiledata);
+                    like_styleListAdapter = new StyleListAdapter(getContext(), like_arraylist, like_likelistForStylelist, like_commentlist, like_profilelist, currentfragment);
                     like_recyclerview.setAdapter(like_styleListAdapter);
                     like_styleListAdapter.notifyDataSetChanged();
                     Log.v("LikeActivity", "Call is completed!");
@@ -213,11 +213,11 @@ public class LikeActivity extends Fragment {
                             JSONArray commentdata = new JSONArray(jsonObject.getString("commentdata"));
                             JSONArray stylelistdata = new JSONArray(jsonObject.getString("stylelistdata"));
                             JSONArray profiledata = new JSONArray(jsonObject.getString("profiledata"));
-                            setLikelistArray(likedataforstylelist);
-                            setCommentlistArray(commentdata);
-                            setStylelistArray(stylelistdata, likedata);
-                            setProfilelistArray(profiledata);
-                            like_styleListAdapter = new StyleListAdapter(getContext(), like_arraylist, like_likelistForStylelist, like_commentlist, like_profilelist);
+                            like_likelistForStylelist = SetArrayListUtils.setLikelistArray(likedataforstylelist);
+                            like_commentlist = SetArrayListUtils.setCommentlistArray(commentdata);
+                            like_arraylist = SetArrayListUtils.setStylelistArray(stylelistdata, likedata);
+                            like_profilelist = SetArrayListUtils.setProfilelistArray(profiledata);
+                            like_styleListAdapter = new StyleListAdapter(getContext(), like_arraylist, like_likelistForStylelist, like_commentlist, like_profilelist, currentfragment);
                             like_recyclerview.setAdapter(like_styleListAdapter);
                             like_styleListAdapter.notifyDataSetChanged();
                             Log.v("LikeActivity", "Call is completed!");
@@ -238,64 +238,6 @@ public class LikeActivity extends Fragment {
                 like_swiperefreshlayout.setRefreshing(false);
             }
         });
-    }
 
-    private void setLikelistArray(JSONArray jsonArray) throws JSONException {
-        like_likelistForStylelist = new ArrayList<>();
-        for(int i = 0; i < jsonArray.length(); i++){
-            JSONObject jsonObject = jsonArray.getJSONObject(i);
-            LikeItem likeitem = new LikeItem();
-            likeitem.setId(jsonObject.getInt("id"));
-            likeitem.setListid(jsonObject.getInt("listid"));
-            likeitem.setFacebookid(jsonObject.getString("facebookid"));
-            likeitem.setTime(jsonObject.getString("time"));
-            like_likelistForStylelist.add(likeitem);
-        }
-    }
-
-    private void setCommentlistArray(JSONArray jsonArray) throws JSONException {
-        like_commentlist = new ArrayList<>();
-        for (int i = 0; i < jsonArray.length(); i++){
-            JSONObject jsonObject = jsonArray.getJSONObject(i);
-            CommentItem commentItem = new CommentItem();
-            commentItem.setId(jsonObject.getInt("id"));
-            commentItem.setListid(jsonObject.getInt("listid"));
-            commentItem.setFacebookid(jsonObject.getString("facebookid"));
-            commentItem.setText(jsonObject.getString("text"));
-            commentItem.setTime(jsonObject.getString("time"));
-            like_commentlist.add(commentItem);
-        }
-    }
-
-    private void setStylelistArray(JSONArray stylelistdata, JSONArray likedata) throws JSONException{
-        like_arraylist = new ArrayList<>();
-        for(int i = 0; i < stylelistdata.length(); i++){
-            JSONObject jsonObject = stylelistdata.getJSONObject(i);
-            for(int j = 0; j < likedata.length(); j++) {
-                if(jsonObject.getInt("id") == likedata.getJSONObject(j).getInt("listid")) {
-                    StyleItem styleItem = new StyleItem();
-                    styleItem.setId(jsonObject.getInt("id"));
-                    styleItem.setFacebookid(jsonObject.getString("facebookid"));
-                    styleItem.setImagename(jsonObject.getString("imagename"));
-                    styleItem.setText(jsonObject.getString("text"));
-                    styleItem.setTime(jsonObject.getString("time"));
-                    like_arraylist.add(styleItem);
-                }
-            }
-        }
-    }
-
-    private void setProfilelistArray(JSONArray jsonArray) throws JSONException {
-        like_profilelist = new ArrayList<>();
-        for(int i = 0; i < jsonArray.length(); i++) {
-            JSONObject jsonObject = jsonArray.getJSONObject(0);
-            ProfileItem profileItem = new ProfileItem();
-            profileItem.setFacebookid(jsonObject.getString("facebookid"));
-            profileItem.setName(jsonObject.getString("name"));
-            profileItem.setLocation(jsonObject.getString("location"));
-            profileItem.setStyle(jsonObject.getString("style"));
-            profileItem.setText(jsonObject.getString("text"));
-            like_profilelist.add(profileItem);
-        }
     }
 }

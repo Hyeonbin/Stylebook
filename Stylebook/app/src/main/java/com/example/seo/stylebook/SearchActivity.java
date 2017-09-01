@@ -90,11 +90,11 @@ public class SearchActivity extends Fragment {
                                 JSONArray likedata = new JSONArray(jsonObject.getString("likedata"));
                                 JSONArray commentdata = new JSONArray(jsonObject.getString("commentdata"));
                                 JSONArray profiledata = new JSONArray(jsonObject.getString("profiledata"));
-                                setSearchArray(stylelistdata);
-                                setLikelistArray(likedata);
-                                setCommentlistArray(commentdata);
-                                setProfilelistArray(profiledata);
-                                search_recyclerview.setAdapter(new StyleListAdapter(getContext(), search_arraylist, search_likelist, search_commentlist, search_profilelist));
+                                search_arraylist = SetArrayListUtils.setStylelistArray(stylelistdata);
+                                search_likelist = SetArrayListUtils.setLikelistArray(likedata);
+                                search_commentlist = SetArrayListUtils.setCommentlistArray(commentdata);
+                                search_profilelist = SetArrayListUtils.setProfilelistArray(profiledata);
+                                search_recyclerview.setAdapter(new StyleListAdapter(getContext(), search_arraylist, search_likelist, search_commentlist, search_profilelist, currentfragment));
                             } catch (IOException e) {
                                 e.printStackTrace();
                             } catch (JSONException e) {
@@ -135,7 +135,7 @@ public class SearchActivity extends Fragment {
             @Override
             public void onClick(View view) {
                 // Todo: 클릭 시 serverservice의 getSearchlist() 호출
-                if(search_text.getText() != null) {
+                if(search_text.getText().toString().getBytes().length > 0) {
                     Call<ResponseBody> call = serverService.getSearchlist(search_text.getText().toString());
                     call.enqueue(new Callback<ResponseBody>() {
                         @Override
@@ -149,11 +149,13 @@ public class SearchActivity extends Fragment {
                                 JSONArray likedata = new JSONArray(jsonObject.getString("likedata"));
                                 JSONArray commentdata = new JSONArray(jsonObject.getString("commentdata"));
                                 JSONArray profiledata = new JSONArray(jsonObject.getString("profiledata"));
-                                setSearchArray(stylelistdata);
-                                setLikelistArray(likedata);
-                                setCommentlistArray(commentdata);
-                                setProfilelistArray(profiledata);
-                                search_recyclerview.setAdapter(new StyleListAdapter(getContext(), search_arraylist, search_likelist, search_commentlist, search_profilelist));
+                                if(stylelistdata.length() == 0)
+                                    Toast.makeText(getContext(), "검색어에 대한 내용이 없습니다", Toast.LENGTH_SHORT).show();
+                                search_arraylist = SetArrayListUtils.setStylelistArray(stylelistdata);
+                                search_likelist = SetArrayListUtils.setLikelistArray(likedata);
+                                search_commentlist = SetArrayListUtils.setCommentlistArray(commentdata);
+                                search_profilelist = SetArrayListUtils.setProfilelistArray(profiledata);
+                                search_recyclerview.setAdapter(new StyleListAdapter(getContext(), search_arraylist, search_likelist, search_commentlist, search_profilelist, currentfragment));
                             } catch (IOException e) {
                                 e.printStackTrace();
                             } catch (JSONException e) {
@@ -168,65 +170,12 @@ public class SearchActivity extends Fragment {
                     });
                 } else {
                     // Todo: 검색어가 없음을 토스트 메시지로 알린다
+                    Toast.makeText(getContext(), "검색어를 입력해주세요", Toast.LENGTH_SHORT).show();
                 }
                 InputMethodManager imm = (InputMethodManager)getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
                 imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
             }
         });
-    }
 
-    private void setSearchArray(JSONArray jsonArray) throws JSONException {
-        search_arraylist = new ArrayList<>();
-        for(int i = 0; i < jsonArray.length(); i++){
-            JSONObject jsonObject = (JSONObject)jsonArray.get(i);
-            StyleItem styleItem = new StyleItem();
-            styleItem.setId(jsonObject.getInt("id"));
-            styleItem.setFacebookid(jsonObject.getString("facebookid"));
-            styleItem.setImagename(jsonObject.getString("imagename"));
-            styleItem.setText(jsonObject.getString("text"));
-            styleItem.setTime(jsonObject.getString("time"));
-            search_arraylist.add(styleItem);
-        }
-    }
-
-    private void setLikelistArray(JSONArray jsonArray) throws JSONException {
-        search_likelist = new ArrayList<>();
-        for(int i = 0; i < jsonArray.length(); i++){
-            JSONObject jsonObject = jsonArray.getJSONObject(i);
-            LikeItem likeitem = new LikeItem();
-            likeitem.setId(jsonObject.getInt("id"));
-            likeitem.setListid(jsonObject.getInt("listid"));
-            likeitem.setFacebookid(jsonObject.getString("facebookid"));
-            likeitem.setTime(jsonObject.getString("time"));
-            search_likelist.add(likeitem);
-        }
-    }
-
-    private void setCommentlistArray(JSONArray jsonArray) throws JSONException {
-        search_commentlist = new ArrayList<>();
-        for (int i = 0; i < jsonArray.length(); i++){
-            JSONObject jsonObject = jsonArray.getJSONObject(i);
-            CommentItem commentItem = new CommentItem();
-            commentItem.setId(jsonObject.getInt("id"));
-            commentItem.setListid(jsonObject.getInt("listid"));
-            commentItem.setFacebookid(jsonObject.getString("facebookid"));
-            commentItem.setText(jsonObject.getString("text"));
-            commentItem.setTime(jsonObject.getString("time"));
-            search_commentlist.add(commentItem);
-        }
-    }
-
-    private void setProfilelistArray(JSONArray jsonArray) throws JSONException {
-        search_profilelist = new ArrayList<>();
-        for(int i = 0; i < jsonArray.length(); i++) {
-            JSONObject jsonObject = jsonArray.getJSONObject(0);
-            ProfileItem profileItem = new ProfileItem();
-            profileItem.setFacebookid(jsonObject.getString("facebookid"));
-            profileItem.setName(jsonObject.getString("name"));
-            profileItem.setLocation(jsonObject.getString("location"));
-            profileItem.setStyle(jsonObject.getString("style"));
-            profileItem.setText(jsonObject.getString("text"));
-            search_profilelist.add(profileItem);
-        }
     }
 }
